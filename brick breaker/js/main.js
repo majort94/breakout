@@ -13,7 +13,7 @@ var app = app || {};
 /*
  .main is an object literal that is a property of the app global
  This object literal has its own properties and methods (functions)
- // hello
+ // hello2
  */
 app.main = {
 	//  properties

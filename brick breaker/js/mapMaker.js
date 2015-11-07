@@ -52,17 +52,28 @@
 	var shapeRow8 = [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null];
 	var shapeRowAll = [shapeRow0, shapeRow1, shapeRow2, shapeRow3, shapeRow4, shapeRow5, shapeRow6, shapeRow7, shapeRow8];
 	
+	shapeRowAll[4][4] = new Shape();
+	shapeRowAll[4][6] = new Shape();
+	shapeRowAll[4][8] = new Shape();
+	shapeRowAll[5][8] = new Shape();
+	shapeRowAll[5][6] = new Shape();
+	shapeRowAll[5][4] = new Shape();
+
+	shapeRowAll[4][12] = new Shape();
+	shapeRowAll[4][14] = new Shape();
+	shapeRowAll[4][16] = new Shape();
+	shapeRowAll[5][16] = new Shape();
+	shapeRowAll[5][14] = new Shape();
+	shapeRowAll[5][12] = new Shape();
+
 	var map = {
 		numCols : typeRow0.length,
 		numRows : typeRowAll.length
-		
-
 	};
 
 	var BLOCK = {
 		piece : canvas.width / map.numCols,
 		height0 : (canvas.height - 175) / map.numRows
-
 	}
 	var blocks = [];
 
@@ -142,42 +153,41 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min)) + min;
 }
 
-// TO DO --------------- CHANGE TO RETURN REFERENCE ARRAY
-// remove code changing typeRowAll. create and fill array of surrounding brick indices
-function referenceSurroundingBricks(trigger, effect) {
-	
+function referenceSurroundingBricks(trigger) {
+	var referenceArray = [];
+
 	var maxRowIndex = typeRowAll.length;
 	//right now this works since all rows are consistent length
 	var maxWithinRowIndex = typeRowAll[0].length;
 
-	//statements check if surrounding bricks would be within the max width/height and if they are normal bricks (allowing them to be transformed to effect type)
+	//statements check if surrounding bricks would be within the max width/height and if they are normal brick type (triggers can't be transformed to effect types)
 	// COMPASS KEY
-	// N
-	if ((trigger.row > 0) && (typeRowAll[trigger.row -1][trigger.rowIndex] == 1))
-		{ typeRowAll[trigger.row -1][trigger.rowIndex] = effect; }
-	// NE
-	if ((trigger.row > 0) && (trigger.rowIndex <= maxXIndex -2) && (typeRowAll[trigger.row][trigger.rowIndex -2] == 1))
-		{ typeRowAll[trigger.row][trigger.rowIndex -2] = effect; }
-	// E
-	if ((trigger.rowIndex <= maxXIndex -2) && (typeRowAll[trigger.row][trigger.rowIndex +2] == 1))
-		{ typeRowAll[trigger.row][trigger.trigger.rowIndex +2] = effect; }
-	// SE
-	if ((trigger.row <= maxYIndex -2) && (trigger.rowIndex <= maxXIndex -2) && (typeRowAll[trigger.row +1][trigger.rowIndex +2] == 1))
-		{ typeRowAll[trigger.row +1][trigger.rowIndex +2] = effect; }
-	// S
-	if ((trigger.row <= maxYIndex -2) && (typeRowAll[trigger.row +1][trigger.rowIndex] == 1))
-		{ typeRowAll[trigger.row +1][trigger.rowIndex] = effect; }
-	// SW
-	if ((trigger.row <= maxYIndex -2) && (trigger.rowIndex >= 2) && (typeRowAll[trigger.row +1][trigger.rowIndex -2] == 1))
-		{ typeRowAll[trigger.row +1][trigger.rowIndex -2] = effect; }
-	// W
-	if ((trigger.rowIndex >= 2) && (typeRowAll[trigger.row][trigger.rowIndex -2] == 1))
-		{ typeRowAll[trigger.row][trigger.rowIndex -2] = effect; }
 	// NW
 	if ((trigger.row > 0) && (trigger.rowIndex >= 2) && (typeRowAll[trigger.row -1][trigger.rowIndex -2] == 1))
-		{ typeRowAll[trigger.row -1][trigger.rowIndex -2] = effect; }
+		{ referenceArray.push(trigger.row -1, trigger.rowIndex -1); }
+	// N
+	if ((trigger.row > 0) && (typeRowAll[trigger.row -1][trigger.rowIndex] == 1))
+		{ referenceArray.push(trigger.row -1, trigger.rowIndex); }
+	// NE
+	if ((trigger.row > 0) && (trigger.rowIndex <= maxXIndex -2) && (typeRowAll[trigger.row][trigger.rowIndex -2] == 1))
+		{ referenceArray.push(trigger.row -1, trigger.rowIndex +1); }
+	// E
+	if ((trigger.rowIndex <= maxXIndex -2) && (typeRowAll[trigger.row][trigger.rowIndex +2] == 1))
+		{ referenceArray.push(trigger.row, trigger.rowIndex +1); }
+	// SE
+	if ((trigger.row <= maxYIndex -2) && (trigger.rowIndex <= maxXIndex -2) && (typeRowAll[trigger.row +1][trigger.rowIndex +2] == 1))
+		{ referenceArray.push(trigger.row +1, trigger.rowIndex +1); }
+	// S
+	if ((trigger.row <= maxYIndex -2) && (typeRowAll[trigger.row +1][trigger.rowIndex] == 1))
+		{ referenceArray.push(trigger.row +1, trigger.rowIndex); }
+	// SW
+	if ((trigger.row <= maxYIndex -2) && (trigger.rowIndex >= 2) && (typeRowAll[trigger.row +1][trigger.rowIndex -2] == 1))
+		{ referenceArray.push(trigger.row +1, trigger.rowIndex -1); }
+	// W
+	if ((trigger.rowIndex >= 2) && (typeRowAll[trigger.row][trigger.rowIndex -2] == 1))
+		{ referenceArray.push(trigger.row, trigger.rowIndex -1); }
 
-	//return referenceArray;
+	return referenceArray;
 }
 
 function applyEffectsToBricks(bricksArray, effect)
@@ -190,23 +200,27 @@ function applyEffectsToBricks(bricksArray, effect)
 		{
 			//Freeze
 			case 5:
+				//freezing stops burn effects
+				if (shapeRowAll[bricksArray[i].row][bricksArray[i].rowIndex].type = 5) 
+					{ shapeRowAll[bricksArray[i].row][bricksArray[i].rowIndex].lifespan = null; }
 				shapeRowAll[bricksArray[i].row][bricksArray[i].rowIndex].health = 2;
 				break;
 			//Burn
 			case 6:
-				shapeRowAll[bricksArray[i].row][bricksArray[i].rowIndex].lifespan = 3;
+				//ice burns twice as fast as normal
+				if (shapeRowAll[bricksArray[i].row][bricksArray[i].rowIndex].type = 5) 
+					{ shapeRowAll[bricksArray[i].row][bricksArray[i].rowIndex].lifespan = 1; }
+				shapeRowAll[bricksArray[i].row][bricksArray[i].rowIndex].lifespan = 2;
 				break;
 		}
 	}
 }
 
-// TO DO ------ ICE / BURN MECHANICS INTERACTION
-// remove lifespan, and change DOT to work with health, so that ice burns twice as fast as normal bricks
 function lethalStatusCheck(){
 	 for(var i = 0; i < typeRowAll.length; i++){
 		for(var j = 0; j < typeRowAll[i].length; j++)
 		{
-			//if there is a brick in element
+			//find bricks
 			if (shapeRowAll[i][j] != null)
 			{
 				// 0hp kill threshold
@@ -214,15 +228,15 @@ function lethalStatusCheck(){
 				{ 
 					deleteBrick(i, j); 
 				}
+
 				// find bricks affected by DOT
-		 		if (shapeRowAll[i][j].lifespan != null)
-		 		{
-		 			// 0lifespan kill threshold
-		 			if (shapeRowAll[i][j].lifespan == 0)
-		 			{
-		 				deleteBrick(i, j);
-		 			}
-		 		}
+				if (shapeRowAll[i][j].lifespan != null)
+				{
+					if (shapeRowAll[i][j].lifespan == 0)
+					{
+						deleteBrick();
+					}
+				}
 			}
 		}
 	}

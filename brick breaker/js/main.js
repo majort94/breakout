@@ -46,11 +46,11 @@ app.main = {
     CIRCLE: Object.freeze({
     	NUM_CIRCLES_START: 5,
     	NUM_CIRCLES_END: 70,
-    	START_RADIUS: 15,
+    	START_RADIUS: 10,
     	MAX_RADIUS: 45,
     	MIN_RADIUS: 2,
     	MAX_LIFETIME: 2.5,
-    	MAX_SPEED: 80,
+    	MAX_SPEED: 150,
     	EXPLOSION_SPEED: 60,
     	IMPLOSION_SPEED: 84
     }),
@@ -74,8 +74,8 @@ app.main = {
    	}),
 /*
    	PLAYER: Object.seal({
-   		SIZE_X: 25,
-   		SIZE_Y: 10,
+   		player.w: 25,
+   		player.h: 10,
    		SPEED: 1,
    		EXTEND: 0,
    		X: 640 / 2,
@@ -102,7 +102,7 @@ app.main = {
 		this.gameState = this.GAME_STATE.BEGIN;
 		
 
-		this.canvas.onmousedown = this.domousedown.bind(this);	
+		//this.canvas.onmousedown = this.domousedown.bind(this);	
 
 		this.bgAudio = document.querySelector("#bgAudio");
 		this.bgAudio.volume=0.25;
@@ -111,12 +111,12 @@ app.main = {
 
 		this.level = 0;
 		this.player = {
-	   		SIZE_X: 35,
-	   		SIZE_Y: 10,
+	   		w: 35,
+	   		h: 10,
 	   		SPEED: 3,
 	   		EXTEND: 0,
-	   		X: 900 / 2,
-	   		Y: canvas.height - 10 - 2
+	   		x: 900 / 2,
+	   		y: canvas.height - 10 - 2
    		};
    		this.ball = {
    			x : canvas.width / 2,
@@ -143,16 +143,16 @@ app.main = {
 
 	drawPlayer: function(ctx, player){
 		ctx.save();
-		//console.log('x ' + player.X);
+		//console.log('x ' + player.x);
 		//console.log(myKeys.keydown[37]);
 		var movePlayer = function(){
 			if(myKeys.keydown[37]){
 				// move left
-				player.X -= player.SPEED;
+				player.x -= player.SPEED;
 			}
 			if(myKeys.keydown[39]){
 				// move right
-				player.X += player.SPEED;
+				player.x += player.SPEED;
 			}
 
 		};
@@ -160,7 +160,7 @@ app.main = {
 		movePlayer();
 		ctx.fillStyle = 'white';
 		//ctx.fillRect(150, 150, 50, 50);
-		ctx.fillRect(player.X, player.Y, player.SIZE_X, player.SIZE_Y);
+		ctx.fillRect(player.x, player.y, player.w, player.h);
 		ctx.restore();
 
 
@@ -205,7 +205,6 @@ app.main = {
 		this.bgAudio.play();
 
 
-
 		if(this.paused){
 			this.paused = false;
 			this.update();
@@ -217,12 +216,14 @@ app.main = {
 			this.pauseCircles = false;
 		}
 
-		if(this.gameState == this.GAME_STATE.EXPLODING){
+/* TSMITH - Not needed for breakout
+		if(this.gameState == this.GAME_STATE.BEGIN){
+			this.gameState = this.GAME_STATE.DEFAULT;
 			return;
 		}
 
-		if(this.gameState == this.GAME_STATE.BEGIN){
-			this.gameState = this.GAME_STATE.DEFAULT;
+		*/
+		if(this.gameState == this.GAME_STATE.DEFAULT){
 			return;
 		}
 		if(this.gameState == this.GAME_STATE.ROUND_OVER){
@@ -256,12 +257,12 @@ app.main = {
 
 
 		var mouse = getMouse(e);
-		this.checkCircleClicked(mouse);
+		//this.checkCircleClicked(mouse);
 		//console.log("(mouse.x, mouse.y)=" + mouse.x + "," + mouse.y);
 	},
 
 
-
+/*
 
  drawBall : function(ctx, dt, ball, player, app){
  		
@@ -270,7 +271,7 @@ app.main = {
 		ball.y += ball.ySpeed * ball.speed * dt;
 		
 			if(app.gameState == app.GAME_STATE.BEGIN){
-				ball.x = player.X + player.SIZE_X/2;
+				ball.x = player.x + player.w/2;
 				//app.drawBall(ctx, dt, ball, player);
 			}
 			if(app.circleHitLeftRight(ball))
@@ -278,7 +279,7 @@ app.main = {
 					 ball.xSpeed *= -1;
 					 moveBall(dt, ball, player, app);
 				}
-	 			if(app.circleHitTopBottom(ball))
+	 			if(app.circleHitTopBottom(ball) == 0)
 	 			{
 					ball.ySpeed *= -1;
 					moveBall(dt, ball, player, app);
@@ -299,33 +300,78 @@ app.main = {
 		fillBall();
 
 	},
+	*/
 
-checkForCollisions: function(){
-		if(this.gameState == this.GAME_STATE.EXPLODING){
+checkForCollisions: function(dt){
+		if(this.gameState == this.GAME_STATE.DEFAULT){
 			// check for collisions between circles
 			for(var i=0;i<this.circles.length; i++){
 				var c1 = this.circles[i];
+				// did circles leave screen?
+
+				if(this.circleHitLeftRight(c1))
+				{
+					 c1.xSpeed *= -1;
+					 c1.move(dt);
+					 return;
+				}
+
+				switch(this.circleHitTopBottom(c1)){
+					case 0:
+						c1.ySpeed *= -1;
+						c1.move(dt);
+						return;
+						break;
+					case 1:
+						c1.kill();
+						return;
+						break;
+					default:
+				}
+				if(checkIntersect(c1,app.main.player) ){
+						//this.playEffect();
+						//c2.state = this.CIRCLE_STATE.EXPLODING;
+						c1.ySpeed *= -1;
+						return;
+						//var x = c1.x+ c1.radius;
+						//var y = app.main.player
+					}
+
+		/*
+				for(var i = 0; i < shapeRowAll.length; i ++){
+					for(var j = 0; j < shapeRowAll[i].length; j++){
+						var temp = shapeRowAll[i][j];
+
+						if(temp){
+							console.log('ttt ' + temp);
+						}
+					}
+				}
+				*/
+
+				for(var i = 0; i < blocks.length; i ++){
+					if(checkIntersect(c1, blocks[i])){
+						c1.ySpeed *= -1;
+						return;
+					}
+				}
+				/*
 				// only check for collisions if c1 is exploding
-				if (c1.state === this.CIRCLE_STATE.NORMAL) continue;   
-				if (c1.state === this.CIRCLE_STATE.DONE) continue;
 				for(var j=0;j<this.circles.length; j++){
 					var c2 = this.circles[j];
 				// don't check for collisions if c2 is the same circle
 					if (c1 === c2) continue; 
 				// don't check for collisions if c2 is already exploding 
-					if (c2.state != this.CIRCLE_STATE.NORMAL ) continue;  
-					if (c2.state === this.CIRCLE_STATE.DONE) continue;
+					//if (c2.state != this.CIRCLE_STATE.NORMAL ) continue;  
+					//if (c2.state === this.CIRCLE_STATE.DONE) continue;
 				
 					// Now you finally can check for a collision
-					if(circlesIntersect(c1,c2) ){
-						this.playEffect();
-						c2.state = this.CIRCLE_STATE.EXPLODING;
-						c2.xSpeed = c2.ySpeed = 0;
-						this.roundScore ++;
-					}
+
 				}
+
+				*/
 			} // end for
-			
+			/*
 			// round over?
 			var isOver = true;
 			for(var i=0;i<this.circles.length; i++){
@@ -341,7 +387,7 @@ checkForCollisions: function(){
 				this.gameState = this.GAME_STATE.ROUND_OVER;
 				this.totalScore += this.roundScore;
 			 }
-				
+				*/
 		} // end if GAME_STATE_EXPLODING
 	},
 
@@ -403,7 +449,7 @@ checkForCollisions: function(){
 	 	// TSMITH -- when text is on the screen, stop moving the circles
 	 	if(!this.pauseCircles){
 		 	this.moveCircles(dt);
-		 	this.checkForCollisions();
+		 	//this.checkForCollisions();
 		 }
 		// 5) DRAW	
 		// i) draw background
@@ -416,7 +462,9 @@ checkForCollisions: function(){
 		drawMap();
 		//this.drawBall(this.ctx, dt, this.ball, this.player, app.main);
 		this.moveCircles(dt);
+		this.checkForCollisions(dt);
 		this.drawCircles(this.ctx);
+
 
 	
 		// iii) draw HUD
@@ -450,7 +498,7 @@ drawHUD: function(ctx){
 		if(this.gameState == this.GAME_STATE.BEGIN){
 			ctx.textAlign = "center";
 			ctx.textBaseline = "middle";
-			this.fillText(this.ctx, "To begin, click anywhere", this.WIDTH/2, this.HEIGHT/2, "30pt courier", "white");
+			this.fillText(this.ctx, "To begin, Press UP", this.WIDTH/2, this.HEIGHT/2, "30pt courier", "white");
 		} // end if
 	
 		// NEW
@@ -517,9 +565,16 @@ drawHUD: function(ctx){
 	},
 
 	circleHitTopBottom: function (c){
-		if(c.y < c.radius || c.y > this.HEIGHT - c.radius){
-			return true;
+		if(c.y < c.radius ){
+			return 0;
+		}else{
+			if( c.y > this.HEIGHT - c.radius){
+			return 1;
+			}else{
+				return 2;
 		}
+	}
+
 	},
 
 	makeCircles: function(num){
@@ -534,10 +589,24 @@ drawHUD: function(ctx){
 			ctx.restore();
 		};
 
+		var circleDeath = function(){
+			if(app.main.lives !=0){
+				app.main.lives--;
+			}else{
+				alert('GET THE FUCK OUT!');
+			}
+		};
+
 		var circleMove = function(dt){
 			if(app.main.gameState == app.main.GAME_STATE.BEGIN){
 				//console.log('here');
-				this.x = app.main.player.X + app.main.player.SIZE_X / 2;
+				this.x = app.main.player.x + app.main.player.w / 2;
+
+				if(myKeys.keydown[myKeys.KEYBOARD.KEY_UP]){
+					this.ySpeed = -1;
+					app.main.gameState = app.main.GAME_STATE.DEFAULT;
+				}
+				
 			}
 			this.x += this.xSpeed * this.speed * dt;
 			this.y += this.ySpeed * this.speed * dt;
@@ -559,6 +628,7 @@ drawHUD: function(ctx){
 
 			c.draw = circleDraw;
 			c.move = circleMove;
+			c.kill = circleDeath;
 
 
 			Object.seal(c);
@@ -631,17 +701,7 @@ drawHUD: function(ctx){
 			// move circles
 			c.move(dt);
 		
-			// did circles leave screen?
-			if(this.circleHitLeftRight(c))
-			{
-				 c.xSpeed *= -1;
-				 c.move(dt);
-			}
- 			if(this.circleHitTopBottom(c))
- 			{
-				c.ySpeed *= -1;
-				c.move(dt);
-			}
+
 	
 		} // end for loop
 	}

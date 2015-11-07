@@ -116,9 +116,14 @@ function pointInsideCircle(x, y, I){
 	return dx * dx + dy * dy <= I.radius * I.radius;
 }
 
-function circlesIntersect(c1, c2){
-	var dx = c2.x - c1.x;
-	var dy = c2.y - c1.y;
-	var distance = Math.sqrt(dx*dx + dy*dy);
-	return distance < c1.radius + c2.radius;
+function checkIntersect(c1, c2){
+	//var dx = c2.x - c1.x;
+	//var dy = c2.y - c1.y;
+	//var distance = Math.sqrt(dx*dx + dy*dy);
+	//return distance < c1.radius + c2.radius;
+	if((c1.x - c1.radius < c2.x + c2.w) && (c1.x + c1.radius > c2.x) &&
+		(c1.y - c1.radius > c2.y + c2.h) && (c1.y + c1.radius < c2.y)){
+		return true;
+	}else{ return false;
+	}
 }

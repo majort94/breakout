@@ -348,10 +348,12 @@ checkForCollisions: function(dt){
 					}
 				}
 				*/
+				
+				for(var j = 0; j < blocks.length; j ++){
+					if(checkIntersectBlock(c1, blocks[j])){
+						c1.ySpeed *= -1; 
+						
 
-				for(var i = 0; i < blocks.length; i ++){
-					if(checkIntersect(c1, blocks[i])){
-						c1.ySpeed *= -1;
 						return;
 					}
 				}

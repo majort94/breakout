@@ -122,12 +122,14 @@ function Shape(x, y, w, h, fill, type, angle, row, rowIndex) {
     this.fill = fill;
     this.type = type;
     this.angle = angle;
+    this.row = row;
+    this.rowIndex = rowIndex;
 }
 
 function drawMap(){
 	for (var i = 0; i < blocks.length; i++) {
 		ctx.save();
-		ctx.fillStyle = blocks[i].fill
+		ctx.fillStyle = blocks[i].fill;
 		ctx.translate(blocks[i].x, blocks[i].y);
 		if(blocks[i].angle != 0){
 			ctx.rotate(blocks[i].angle * Math.PI/180);

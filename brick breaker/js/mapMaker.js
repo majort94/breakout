@@ -130,11 +130,8 @@ function Shape(x, y, w, h, fill, type, angle, row, rowIndex) {
     this.angle = angle;
     this.row = row;
     this.rowIndex = rowIndex;
-<<<<<<< HEAD
-=======
     this.health = 1;
     this.lifespan = null;	//in seconds
->>>>>>> Nick
 }
 
 function drawMap(){

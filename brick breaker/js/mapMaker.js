@@ -51,20 +51,6 @@
 	var shapeRow7 = [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null];
 	var shapeRow8 = [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null];
 	var shapeRowAll = [shapeRow0, shapeRow1, shapeRow2, shapeRow3, shapeRow4, shapeRow5, shapeRow6, shapeRow7, shapeRow8];
-	
-	shapeRowAll[4][4] = new Shape();
-	shapeRowAll[4][6] = new Shape();
-	shapeRowAll[4][8] = new Shape();
-	shapeRowAll[5][8] = new Shape();
-	shapeRowAll[5][6] = new Shape();
-	shapeRowAll[5][4] = new Shape();
-
-	shapeRowAll[4][12] = new Shape();
-	shapeRowAll[4][14] = new Shape();
-	shapeRowAll[4][16] = new Shape();
-	shapeRowAll[5][16] = new Shape();
-	shapeRowAll[5][14] = new Shape();
-	shapeRowAll[5][12] = new Shape();
 
 	var map = {
 		numCols : typeRow0.length,
@@ -114,7 +100,11 @@ function makeMap1(){
 						tempFill = "brown";
 						break;
 				}
-				blocks.push(new Shape(((BLOCK.piece).toFixed()) * (j), (BLOCK.height0).toFixed() * i, (BLOCK.piece).toFixed() * 2, (BLOCK.height0).toFixed(), tempFill, typeRowAll[i][j], shapeRowAll[i][j], i, j));
+				var temp = new Shape(((BLOCK.piece).toFixed()) * (j), (BLOCK.height0).toFixed() * i, (BLOCK.piece).toFixed() * 2, (BLOCK.height0).toFixed(), tempFill, typeRowAll[i][j], shapeRowAll[i][j], i, j);
+				//blocks.push(new Shape(((BLOCK.piece).toFixed()) * (j), (BLOCK.height0).toFixed() * i, (BLOCK.piece).toFixed() * 2, (BLOCK.height0).toFixed(), tempFill, typeRowAll[i][j], shapeRowAll[i][j], i, j));
+				blocks.push(temp);
+				//shapeRowAll[i][i] = new Shape(((BLOCK.piece).toFixed()) * (j), (BLOCK.height0).toFixed() * i, (BLOCK.piece).toFixed() * 2, (BLOCK.height0).toFixed(), tempFill, typeRowAll[i][j], shapeRowAll[i][j], i, j);
+				shapeRowAll[i][j] = temp;
 			}
 		}
 	}
@@ -131,10 +121,11 @@ function Shape(x, y, w, h, fill, type, angle, row, rowIndex) {
     this.row = row;
     this.rowIndex = rowIndex;
     this.health = 1;
-    this.lifespan = null;	//in seconds
+    this.lifespan = 0;	//in seconds
 }
 
 function drawMap(){
+	
 	for (var i = 0; i < blocks.length; i++) {
 		ctx.save();
 		ctx.fillStyle = blocks[i].fill;
@@ -147,6 +138,29 @@ function drawMap(){
 		
 		ctx.restore();
 	}
+	
+/*
+	for(var i = 0; i < shapeRow0.length; i++){
+		for(var j = 0; j < shapeRowAll.length; j++){
+			if(shapeRowAll[i][j] != null){
+
+			
+			ctx.save();
+			ctx.fillStyle = shapeRowAll[i][j].fill;
+			ctx.translate(shapeRowAll[i][j].x, shapeRowAll[i][j].y);
+			if(shapeRowAll[i][j].angle != 0){
+				ctx.rotate(shapeRowAll[i][j].angle * Math.PI/180);
+			}
+
+			ctx.fillRect(0, 0, shapeRowAll[i][j].w, shapeRowAll[i][j].h);
+			
+			ctx.restore();
+		}
+
+		}
+
+	}
+	*/
 }
 
 function getRandomInt(min, max) {
@@ -202,7 +216,7 @@ function applyEffectsToBricks(bricksArray, effect)
 			case 5:
 				//freezing stops burn effects
 				if (shapeRowAll[bricksArray[i].row][bricksArray[i].rowIndex].type = 5) 
-					{ shapeRowAll[bricksArray[i].row][bricksArray[i].rowIndex].lifespan = null; }
+					{ shapeRowAll[bricksArray[i].row][bricksArray[i].rowIndex].lifespan = 0; }
 				shapeRowAll[bricksArray[i].row][bricksArray[i].rowIndex].health = 2;
 				break;
 			//Burn
@@ -216,21 +230,25 @@ function applyEffectsToBricks(bricksArray, effect)
 	}
 }
 
-function lethalStatusCheck(){
-	 for(var i = 0; i < typeRowAll.length; i++){
-		for(var j = 0; j < typeRowAll[i].length; j++)
-		{
+function lethalStatusCheck(i, j){
+	// for(var i = 0; i < typeRowAll.length; i++){
+	//	for(var j = 0; j < typeRowAll[i].length; j++)
+		//{
 			//find bricks
+
 			if (shapeRowAll[i][j] != null)
 			{
+
 				// 0hp kill threshold
 				if (shapeRowAll[i][j].health == 0) 
 				{ 
 					deleteBrick(i, j); 
+
+					return;
 				}
 
 				// find bricks affected by DOT
-				if (shapeRowAll[i][j].lifespan != null)
+				if (shapeRowAll[i][j].lifespan != 0)
 				{
 					if (shapeRowAll[i][j].lifespan == 0)
 					{
@@ -238,11 +256,18 @@ function lethalStatusCheck(){
 					}
 				}
 			}
-		}
-	}
+		//}
+	//}
 }
 
 function deleteBrick(i, j){
 	typeRowAll[i][j] = 0;
 	shapeRowAll[i][j] = null;
+
+
+	for(var g = 0; g < blocks.length; g++){
+		if((blocks[g].row == i) && (blocks[g].rowIndex == j)){
+			blocks.splice(g, 1);
+		}
+	}
 }

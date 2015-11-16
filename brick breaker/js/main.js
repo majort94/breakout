@@ -415,8 +415,10 @@ checkForCollisions: function(dt){
 				for(var j = 0; j < blocks.length; j ++){
 					if(checkIntersectBlock(c1, blocks[j])){
 						c1.ySpeed *= -1; 
-						
-
+						console.log("i " + blocks[j].row);
+						console.log("j " + blocks[j].rowIndex);
+						blocks[j].health--;
+						lethalStatusCheck(blocks[j].row, blocks[j].rowIndex);
 						return;
 					}
 				}
@@ -557,7 +559,6 @@ drawHUD: function(ctx){
       	// fillText(string, x, y, css, color)
 		//this.fillText(this.ctx, "This Round: " + this.roundScore + " of " + this.numCircles, 20, 20, "16pt courier", "#ddd");
 		//this.fillText(this.ctx, "Goal: " + this.roundGoal, 20, 40, "16pt courier", "#ddd");
-console.log('fuck1 ' + this.gameState);
 		// NEW
 		//console.log('winhe ' + window.height);
 		//console.log('screenh ' + screen.height);

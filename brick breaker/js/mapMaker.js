@@ -12,15 +12,16 @@
 			surrounding bricks become frozen bricks
 	3 : fire trigger
 			surrounding bricks become burning bricks
-	4 : stone trigger
-		takes multiple hits to break
 	...
+	4 : stone brick
+			takes multiple hits to break
 	5 : frozen brick
 			this brick takes an extra hit to destroy and slows the ball on contact
 	6 : burning brick
 			this brick becomes invincible while burning for 0.5 seconds and speeds up the ball on contact
 	...
-
+	7 : double ball brick
+			spawns an extra ball in the field for a short duration
 	*/
 	var canvas = document.querySelector('canvas');
 	var ctx = this.canvas.getContext('2d');
@@ -132,19 +133,43 @@ function Shape(x, y, w, h, fill, type, angle, row, rowIndex) {
     this.rowIndex = rowIndex;
     this.health = 1;
     this.lifespan = null;	//in seconds
+    this.beenHit = function(ball) {
+    	this.health -= 1;
+    	switch (type)
+    	{
+    		case 5: // ice brick
+    			// apply chill to ball
+    			break;
+    		case 6: // fire brick
+    			// apply speed boost to ball
+    			break;
+
+    		case 2: // ice trigger
+    			applyEffectsToBricks(referenceSurroundingBricks(this), type);
+    			break;
+    		case 3: // fire trigger
+    			applyEffectsToBricks(referenceSurroundingBricks(this), type);
+    			break;
+
+    		case 7: // double ball brick
+    			//
+    			break;
+    }
 }
 
 function drawMap(){
 	for (var i = 0; i < blocks.length; i++) {
 		ctx.save();
+
+		//
 		ctx.fillStyle = blocks[i].fill;
 		ctx.translate(blocks[i].x, blocks[i].y);
 		if(blocks[i].angle != 0){
 			ctx.rotate(blocks[i].angle * Math.PI/180);
 		}
-
 		ctx.fillRect(0, 0, blocks[i].w, blocks[i].h);
-		
+		//
+
 		ctx.restore();
 	}
 }

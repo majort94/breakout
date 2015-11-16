@@ -17,8 +17,8 @@ var app = app || {};
  */
 app.main = {
 	//  properties
-    WIDTH : 500, 
-    HEIGHT: 500,
+    WIDTH : 1200, 
+    HEIGHT: 700,
     canvas: undefined,
     ctx: undefined,
    	lastTime: 0, // used by calculateDeltaTime() 
@@ -117,27 +117,54 @@ app.main = {
 		this.totalScore = 0;
 		this.lives = this.MAX_LIVES;
 		document.querySelector("#fsButton").onclick = function(){
+			if(this.first){
 				app.main.setupFullscreen();
+
+			}else{
+				app.main.makeFullscreen();
+			}
 		};
 
-/*
-		 window.addEventListener("resize", function(){
-		 if(window.innerHeight != screen.height){
-	 		app.main.gameState = app.main.GAME_STATE.SMALL;
-	 		app.main.drawHUD(app.main.ctx);
-	 	}
-	 	/*
-			if(canvas.width == 500){
-			app.main.gameState = app.main.GAME_STATE.BEGIN;
-			app.main.drawHUD(app.main.ctx);
-		}else{
-			app.main.gameState = app.main.GAME_STATE.SMALL;
-			app.main.drawHUD(app.main.ctx);
-		}
-		
-		});
-*/
-		this.drawHUD(this.ctx);
+		this.player = {
+	   		w: 35,
+	   		h: 10,
+	   		SPEED: 3,
+	   		EXTEND: 0,
+	   		x: 900 / 2,
+	   		y: canvas.height - 10 - 2
+   		};
+   		this.ball = {
+   			x : canvas.width / 2,
+			y : canvas.height - 100,
+			radius : 10,
+			speed : 80
+   		};
+   		this.gameState = this.GAME_STATE.BEGIN;
+   		//this.drawHUD(this.ctx);
+   		makeMap1();
+		//this.drawPlayer(this.ctx, this.player);
+		this.update();
+
+
+
+		//this.drawHUD(this.ctx);
+	},
+
+	makeFullscreen: function(){
+		requestFullscreen(canvas);
+		canvas.width= window.innerWidth;
+		canvas.height = window.innerHeight;
+		app.main.WIDTH = canvas.width;
+		app.main.HEIGHT = canvas.height;	
+		this.gameState = this.GAME_STATE.BEGIN;
+		this.update();
+	},
+
+
+	resize1: function(){
+		app.main.gameState = app.main.GAME_STATE.SMALL;
+ 		app.main.drawHUD(app.main.ctx);
+ 		window.removeEventListener("resize", this.resize1);
 	},
 
 	setupFullscreen: function(){
@@ -161,11 +188,11 @@ app.main = {
 			speed : 80
    		};
    		this.gameState = this.GAME_STATE.BEGIN;
-   		this.drawHUD(this.ctx);
+   		//this.drawHUD(this.ctx);
    		makeMap1();
-		this.drawPlayer(this.ctx, this.player);
+		//this.drawPlayer(this.ctx, this.player);
 		this.update();
-		console.log('game ' + this.gameState);
+		//console.log('game ' + this.gameState);
 		// start the game loop
 
 	},
@@ -532,9 +559,9 @@ drawHUD: function(ctx){
 		//this.fillText(this.ctx, "Goal: " + this.roundGoal, 20, 40, "16pt courier", "#ddd");
 console.log('fuck1 ' + this.gameState);
 		// NEW
-		console.log('winhe ' + window.height);
-		console.log('screenh ' + screen.height);
-		if(window.innerHeight != screen.height){
+		//console.log('winhe ' + window.height);
+		//console.log('screenh ' + screen.height);
+	/*	if(this.gameState == this.GAME_STATE.SMALL){
 	 		//app.main.gameState = app.main.GAME_STATE.SMALL;
 	 		//app.main.drawHUD(app.main.ctx);
 	 					ctx.fillStyle = 'black';
@@ -551,11 +578,14 @@ console.log('fuck1 ' + this.gameState);
 			ctx.restore();
 			return;
 	 	}
+	 	*/
+
+	 	/*
 		if(this.gameState == this.GAME_STATE.SMALL){
 			console.log('fuck ' + this.gameState);
 			ctx.fillStyle = 'black';
-			app.main.canvas.width = 500;
-			app.main.canvas.height = 500;
+			app.main.canvas.width = 1000;
+			app.main.canvas.height = 1000;
 			ctx.fillRect(0,0, canvas.width, canvas.height);
 			ctx.restore();
 			var line1 =  this.first ? "To Start Game" : "To Continue Game";
@@ -567,6 +597,9 @@ console.log('fuck1 ' + this.gameState);
 			ctx.restore();
 			return;
 		}
+
+
+		*/
 
 		this.fillText(this.ctx, "Total Score: " + this.totalScore, 5, this.HEIGHT - 15, "16pt courier", "#ddd");
 		this.fillText(this.ctx, "Lives: " + this.lives, this.WIDTH - 125, this.HEIGHT - 15, "16pt courier", "#ddd");

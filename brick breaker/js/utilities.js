@@ -153,3 +153,38 @@ function requestFullscreen(element) {
 	}
 	// .. and do nothing if the method is not supported
 };
+
+
+function calculateAngle(c1){
+	var middle = app.main.player.x + (.5 * app.main.player.w);
+	var tempX = c1.x - app.main.player.x;
+	var tempX1 = 0;
+	//console.log('yehs ' + tempX);
+	console.log('xspde ' + c1.xSpeed);
+	console.log('c1 ' + c1.x);
+	console.log('player ' + app.main.player.x);
+	if(c1.x < middle){
+
+		if(c1.xSpeed < 0){
+			tempX1 = tempX / (app.main.player.w / 2);
+			c1.xSpeed = .5 * (-1 + tempX1);
+			console.log('1 - tempX1 ' + (1 - tempX1));
+		}else{
+			tempX1 = tempX / (app.main.player.w / 2);
+			c1.xSpeed  = .5 * (1 - tempX1);
+			console.log('2 - tempX1 ' + (1 - tempX1));
+		}
+
+	}else{
+		if(c1.xSpeed < 0){
+						tempX1 = (tempX - (app.main.player.w / 2)) / (app.main.player.w / 2);
+			c1.xSpeed = .5 * (-1 + tempX1);
+			console.log('3 - tempX1 ' + (1 - tempX1));
+		}else{
+			tempX1 = (tempX - (app.main.player.w / 2)) / (app.main.player.w / 2);
+			c1.xSpeed = .5 *  tempX1;
+			console.log('4 - tempX1 ' + tempX1);
+		}
+
+	}
+}

@@ -51,7 +51,7 @@ app.main = {
     	MAX_RADIUS: 45,
     	MIN_RADIUS: 2,
     	MAX_LIFETIME: 2.5,
-    	MAX_SPEED: 150,
+    	MAX_SPEED: 100,
     	EXPLOSION_SPEED: 60,
     	IMPLOSION_SPEED: 84
     }),
@@ -126,18 +126,18 @@ app.main = {
 		};
 
 		this.player = {
-	   		w: 35,
+	   		w: 100,
 	   		h: 10,
-	   		SPEED: 3,
+	   		SPEED: 7,
 	   		EXTEND: 0,
-	   		x: 900 / 2,
+	   		x: canvas.width/2,
 	   		y: canvas.height - 10 - 2
    		};
    		this.ball = {
    			x : canvas.width / 2,
 			y : canvas.height - 100,
 			radius : 10,
-			speed : 80
+			speed : 20
    		};
    		this.gameState = this.GAME_STATE.BEGIN;
    		//this.drawHUD(this.ctx);
@@ -395,6 +395,7 @@ checkForCollisions: function(dt){
 						//this.playEffect();
 						//c2.state = this.CIRCLE_STATE.EXPLODING;
 						c1.ySpeed *= -1;
+						calculateAngle(c1);
 						return;
 						//var x = c1.x+ c1.radius;
 						//var y = app.main.player
@@ -516,7 +517,7 @@ checkForCollisions: function(dt){
 
 	 	// TSMITH -- when text is on the screen, stop moving the circles
 	 	if(!this.pauseCircles){
-		 	this.moveCircles(dt);
+		 	//this.moveCircles(dt);
 		 	//this.checkForCollisions();
 		 }
 		// 5) DRAW	
@@ -714,6 +715,7 @@ drawHUD: function(ctx){
 
 				if(myKeys.keydown[myKeys.KEYBOARD.KEY_UP]){
 					this.ySpeed = -1;
+					this.xSpeed = .5; 
 					app.main.gameState = app.main.GAME_STATE.DEFAULT;
 				}
 				
@@ -779,34 +781,6 @@ drawHUD: function(ctx){
 	moveCircles: function(dt){
 		for(var i=0;i<this.circles.length; i++){
 			var c = this.circles[i];
-			if(c.state === this.CIRCLE_STATE.DONE) continue;
-			if(c.state === this.CIRCLE_STATE.EXPLODING){
-				c.radius += this.CIRCLE.EXPLOSION_SPEED  * dt;
-				if (c.radius >= this.CIRCLE.MAX_RADIUS){
-					c.state = this.CIRCLE_STATE.MAX_SIZE;
-					//console.log("circle #" + i + " hit CIRCLE.MAX_RADIUS");
-				}
-				continue;
-			}
-		
-			if(c.state === this.CIRCLE_STATE.MAX_SIZE){
-				c.lifetime += dt; // lifetime is in seconds
-				if (c.lifetime >= this.CIRCLE.MAX_LIFETIME){
-					c.state = this.CIRCLE_STATE.IMPLODING;
-					//console.log("circle #" + i + " hit CIRCLE.MAX_LIFETIME");
-				}
-				continue;
-			}
-				
-			if(c.state === this.CIRCLE_STATE.IMPLODING){
-				c.radius -= this.CIRCLE.IMPLOSION_SPEED * dt;
-				if (c.radius <= this.CIRCLE.MIN_RADIUS){
-					//console.log("circle #" + i + " hit CIRCLE.MIN_RADIUS and is gone");
-					c.state = this.CIRCLE_STATE.DONE;
-					continue;
-				}
-			
-			}
 		
 			// move circles
 			c.move(dt);

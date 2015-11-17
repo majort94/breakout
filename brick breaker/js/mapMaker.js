@@ -30,14 +30,14 @@
 
 
 
-	var typeRow0 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-	var typeRow1 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-	var typeRow2 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-	var typeRow3 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-	var typeRow4 = [0,0,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,0,0,0];
-	var typeRow5 = [0,0,0,1,0,2,0,1,0,0,0,1,0,3,0,1,0,0,0,0];
-	var typeRow6 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-	var typeRow7 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+	var typeRow0 = [1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+	var typeRow1 = [1,0,1,0,0,0,0,1,0,0,1,0,0,1,0,1,0,0,0,0];
+	var typeRow2 = [1,0,1,0,0,0,0,0,1,0,1,0,0,1,0,1,0,0,0,0];
+	var typeRow3 = [1,0,1,0,0,0,0,0,1,0,1,0,0,0,1,0,0,0,0,0];
+	var typeRow4 = [1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,0,0,0,0];
+	var typeRow5 = [1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,0,0,0,0];
+	var typeRow6 = [1,0,1,0,1,0,1,0,1,0,1,0,0,0,0,0,1,0,0,0];
+	var typeRow7 = [1,0,1,0,1,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0];
 	var typeRow8 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 	var typeRowAll = [typeRow0, typeRow1, typeRow2, typeRow3, typeRow4, typeRow5, typeRow6, typeRow7, typeRow8];
 
@@ -83,7 +83,7 @@ function makeMap1(){
 		for(var j = 0; j < typeRowAll[i].length; j++){
 
 			if(typeRowAll[i][j] != 0){
-				//var pick = getRandomInt(0, app.main.colors.length);
+				var pick = getRandomInt(0, app.main.colors.length);
 				var tempFill;
 				switch (typeRowAll[i][j])
 				{
@@ -100,7 +100,7 @@ function makeMap1(){
 						tempFill = "brown";
 						break;
 				}
-				var temp = new Shape(((BLOCK.piece).toFixed()) * (j), (BLOCK.height0).toFixed() * i, (BLOCK.piece).toFixed() * 2, (BLOCK.height0).toFixed(), tempFill, typeRowAll[i][j], shapeRowAll[i][j], i, j);
+				var temp = new Shape(((BLOCK.piece).toFixed()) * (j), (BLOCK.height0).toFixed() * i, (BLOCK.piece).toFixed() * 2, (BLOCK.height0).toFixed(), app.main.colors[pick], typeRowAll[i][j], shapeRowAll[i][j], i, j);
 				//blocks.push(new Shape(((BLOCK.piece).toFixed()) * (j), (BLOCK.height0).toFixed() * i, (BLOCK.piece).toFixed() * 2, (BLOCK.height0).toFixed(), tempFill, typeRowAll[i][j], shapeRowAll[i][j], i, j));
 				blocks.push(temp);
 				//shapeRowAll[i][i] = new Shape(((BLOCK.piece).toFixed()) * (j), (BLOCK.height0).toFixed() * i, (BLOCK.piece).toFixed() * 2, (BLOCK.height0).toFixed(), tempFill, typeRowAll[i][j], shapeRowAll[i][j], i, j);
@@ -263,6 +263,7 @@ function lethalStatusCheck(i, j){
 function deleteBrick(i, j){
 	typeRowAll[i][j] = 0;
 	shapeRowAll[i][j] = null;
+	app.main.totalScore++;
 
 
 	for(var g = 0; g < blocks.length; g++){

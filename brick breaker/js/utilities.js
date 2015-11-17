@@ -163,6 +163,8 @@ function calculateAngle(c1){
 	console.log('xspde ' + c1.xSpeed);
 	console.log('c1 ' + c1.x);
 	console.log('player ' + app.main.player.x);
+
+	/*
 	if(c1.x < middle){
 
 		if(c1.xSpeed < 0){
@@ -187,4 +189,30 @@ function calculateAngle(c1){
 		}
 
 	}
+	*/
+	var change = false;
+	if(c1.xSpeed < 0){
+			tempX1 = tempX / (app.main.player.w);
+			if((c1.xSpeed > -.1) && (c1.x > middle)){
+				change = true;
+				c1.xSpeed -= .1;
+			}
+			c1.xSpeed -= .4;
+			c1.xSpeed *=  (1 - tempX1);
+		}else{
+			tempX1 = tempX / (app.main.player.w);
+			if((c1.xSpeed < .1) && (c1.x < middle)){
+				change = true;
+				c1.xSpeed += .1;
+			}
+			c1.xSpeed += .4;
+			c1.xSpeed  *=  (tempX1);
+		}
+
+		if(change){
+			c1.xSpeed *= -1;
+			change = false;
+			console.log("Change");
+		}
+		console.log('c1.xSpeed ' + c1.xSpeed);
 }

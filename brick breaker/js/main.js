@@ -209,11 +209,15 @@ app.main = {
 		var movePlayer = function(){
 			if(myKeys.keydown[37]){
 				// move left
-				player.x -= player.SPEED;
+				if(player.x > 0){
+					player.x -= player.SPEED;
+				}
 			}
 			if(myKeys.keydown[39]){
 				// move right
-				player.x += player.SPEED;
+				if(player.x < canvas.width){
+					player.x += player.SPEED;
+				}
 			}
 
 		};
@@ -228,12 +232,14 @@ app.main = {
 	},
 
 	resetGame: function(){
-		this.level = 0;
-		this.totalScore = 0;
-		this.lives = this.MAX_LIVES;
-		this.numCircles = this.CIRCLE.NUM_CIRCLES_START;
+		//this.level = 0;
+		//this.totalScore = 0;
+		//this.lives = this.MAX_LIVES;
+		//this.numCircles = this.CIRCLE.NUM_CIRCLES_START;
 		this.gameState = this.GAME_STATE.BEGIN;
-		this.reset();
+		this.newBall(this.player.x + (this.player.w / 2), canvas.height - 100, 0, 0);
+
+		//this.reset();
 	},
 
 
@@ -290,31 +296,21 @@ app.main = {
 			return;
 		}
 		if(this.gameState == this.GAME_STATE.ROUND_OVER){
-			this.pauseCircles = true;
-			if(this.roundScore < this.roundGoal){
-				this.lives--;
+			//this.pauseCircles = true;
+				//this.lives--;
 				if(this.lives == 0){
 					this.gameState = this.GAME_STATE.END;
 					this.stopBGAudio();
-					return;
-				}
 				
-				this.gameState = this.GAME_STATE.REPEAT_LEVEL;
-				this.reset();
+				//this.gameState = this.GAME_STATE.BEGIN;
+				//this.reset();
 				return;
 			}
-			if(this.numCircles == this.CIRCLE.NUM_CIRCLES_END){
-				this.gameState = this.GAME_STATE.END;
-				return;
-			}
-			this.gameState = this.GAME_STATE.DEFAULT;
-			this.reset();
-			return; 
 		}
 		if(this.gameState == this.GAME_STATE.END){
-			this.pauseCircles = true;
+			//this.pauseCircles = true;
 
-			this.resetGame();
+			//this.resetGame();
 			return;
 		}
 
@@ -387,6 +383,9 @@ checkForCollisions: function(dt){
 						break;
 					case 1:
 						c1.kill();
+						if(this.lives != 0){
+							this.resetGame();
+						}
 						return;
 						break;
 					default:
@@ -416,8 +415,6 @@ checkForCollisions: function(dt){
 				for(var j = 0; j < blocks.length; j ++){
 					if(checkIntersectBlock(c1, blocks[j])){
 						c1.ySpeed *= -1; 
-						console.log("i " + blocks[j].row);
-						console.log("j " + blocks[j].rowIndex);
 						blocks[j].health--;
 						lethalStatusCheck(blocks[j].row, blocks[j].rowIndex);
 						return;
@@ -634,12 +631,12 @@ drawHUD: function(ctx){
 			ctx.textBaseline = "middle";
 			ctx.fillStyle = "black";
 			ctx.globalAlpha = 1;
-			if(this.numCircles == this.CIRCLE.NUM_CIRCLES_END){
+			if(this.lives != 0){
 				this.fillText(this.ctx, "You Win!", this.WIDTH/2, this.HEIGHT/2 - 40, "50pt courier", "red");
 			}else{
 				this.fillText(this.ctx, "Game Over", this.WIDTH/2, this.HEIGHT/2 - 40, "30pt courier", "red");
 			}
-			this.fillText(this.ctx, "Click for a New Game", this.WIDTH/2, this.HEIGHT/2, "30pt courier", "white");
+			this.fillText(this.ctx, "Refesh for a New Game", this.WIDTH/2, this.HEIGHT/2, "30pt courier", "white");
 			//this.fillText(this.ctx, "Next round there are " + (this.numCircles + 5) + " circles", this.WIDTH/2 , this.HEIGHT/2 + 35, "20pt courier", "#ddd");
 
 		}
@@ -688,6 +685,15 @@ drawHUD: function(ctx){
 
 	},
 
+	newBall: function(x, y, xSpeed, ySpeed){
+		this.makeCircles(1);
+		var ball = this.circles[this.circles.length - 1];
+		ball.x = x;
+		ball.y = y;
+		ball.xSpeed = xSpeed;
+		ball.ySpeed = ySpeed; 
+	},
+
 	makeCircles: function(num){
 		var array = [];
 		var circleDraw = function(ctx){
@@ -703,8 +709,9 @@ drawHUD: function(ctx){
 		var circleDeath = function(){
 			if(app.main.lives !=0){
 				app.main.lives--;
-			}else{
-				alert('GET THE FUCK OUT!');
+			}
+			if(app.main.lives == 0){
+				app.main.gameState = app.main.GAME_STATE.END;
 			}
 		};
 
@@ -714,8 +721,8 @@ drawHUD: function(ctx){
 				this.x = app.main.player.x + app.main.player.w / 2;
 
 				if(myKeys.keydown[myKeys.KEYBOARD.KEY_UP]){
-					this.ySpeed = -1;
-					this.xSpeed = .5; 
+					this.ySpeed = -2;
+					this.xSpeed = -.09; 
 					app.main.gameState = app.main.GAME_STATE.DEFAULT;
 				}
 				

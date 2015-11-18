@@ -26,6 +26,8 @@ app.main = {
     first: true,
     paused: false,
     pauseCircles: true,
+    // draw map
+    doMap: true,
     animationID: 0,
     gameState: undefined,
     roundScore: 0,
@@ -52,8 +54,8 @@ app.main = {
     	MIN_RADIUS: 2,
     	MAX_LIFETIME: 2.5,
     	MAX_SPEED: 100,
-    	EXPLOSION_SPEED: 60,
-    	IMPLOSION_SPEED: 84
+    	backX: 0,
+    	backY: 0
     }),
 
     GAME_STATE: Object.freeze({
@@ -96,6 +98,9 @@ app.main = {
 		this.canvas.width = this.WIDTH;
 		this.canvas.height = this.HEIGHT;
 		this.ctx = this.canvas.getContext('2d');
+
+		/* Performance tweaks */
+		this.ctx.shadowBlur = 0;
 		
 		this.numCircles = this.CIRCLE.NUM_CIRCLES_START;
 		this.circles = this.makeCircles(this.numCircles);
@@ -131,7 +136,8 @@ app.main = {
 	   		SPEED: 7,
 	   		EXTEND: 0,
 	   		x: canvas.width/2,
-	   		y: canvas.height - 10 - 2
+	   		y: canvas.height - 10 - 2,
+	   		backfill: 0
    		};
    		this.ball = {
    			x : canvas.width / 2,
@@ -207,18 +213,23 @@ app.main = {
 		//console.log('x ' + player.x);
 		//console.log(myKeys.keydown[37]);
 		var movePlayer = function(){
+
 			if(myKeys.keydown[37]){
 				// move left
 				if(player.x > 0){
 					player.x -= player.SPEED;
+					player.backFill = 1;
 				}
 			}
 			if(myKeys.keydown[39]){
 				// move right
 				if(player.x < canvas.width){
 					player.x += player.SPEED;
+					player.backFill = 2;
 				}
 			}
+
+
 
 		};
 		
@@ -226,6 +237,20 @@ app.main = {
 		ctx.fillStyle = 'white';
 		//ctx.fillRect(150, 150, 50, 50);
 		ctx.fillRect(player.x, player.y, player.w, player.h);
+
+		ctx.fillStyle = 'black';
+		switch(player.backFill){
+			case 1:
+				ctx.fillRect((player.x + player.w), player.y, player.SPEED, player.h);
+				player.backFill = 0;
+				break;
+			case 2:
+				ctx.fillRect((player.x - player.SPEED), player.y, player.SPEED, player.h);
+				player.backFill = 0;
+				break;
+			default:
+				break;
+		}
 		ctx.restore();
 
 
@@ -417,6 +442,7 @@ checkForCollisions: function(dt){
 						c1.ySpeed *= -1; 
 						blocks[j].health--;
 						lethalStatusCheck(blocks[j].row, blocks[j].rowIndex);
+						this.doMap = true;
 						return;
 					}
 				}
@@ -520,17 +546,22 @@ checkForCollisions: function(dt){
 		// 5) DRAW	
 		// i) draw background
 		this.ctx.fillStyle = "black"; 
-		this.ctx.fillRect(0,0,this.WIDTH,this.HEIGHT); 
+		//this.ctx.fillRect(0,0,this.WIDTH,this.HEIGHT); 
+		this.ctx.fillRect(0, this.canvas.HEIGHT - 100, this.canvas.width, 100);
 	
 		// ii) draw circles
 		this.ctx.globalAlpha = 0.9;
 		this.drawPlayer(this.ctx, this.player);
-		drawMap();
+		//drawMap();
 		//this.drawBall(this.ctx, dt, this.ball, this.player, app.main);
 		this.moveCircles(dt);
 		this.checkForCollisions(dt);
 		this.drawCircles(this.ctx);
 
+		if(this.doMap){
+			drawMap();
+			this.doMap = false;
+		}
 
 	
 		// iii) draw HUD
@@ -698,6 +729,44 @@ drawHUD: function(ctx){
 		var array = [];
 		var circleDraw = function(ctx){
 			ctx.save();
+
+
+			var newX = 0;
+			var newY = 0;
+			var newW = this.radius;
+			var newH = this.radius;
+
+/*
+			if(this.backX < this.x){
+				newX = this.backX - this.radius;
+				//newH = (this.y - this.radius) - (this.backY - this.radius);
+				newW = (this.x - this.radius) - newX;
+			}else{
+				newX = this.x + this.radius;
+				//newH = (this.backY + this.radius) - (this.y + this.radius);
+				newW = (this.backX + this.radius) - newX;
+			}
+			ctx.fillStyle = 'black';
+			//ctx.fillRect(newX, this.backY + this.radius, newW, newH);
+
+			if(this.backY < this.y){
+				newY = this.backY - this.radius;
+				newH = (this.y - this.radius) - newY;
+			}else{
+				newY = this.y + this.radius;
+				newH = (this.backY + this.radius) - (this.y + this.radius);
+			}
+			
+			//ctx.fillStyle = 'yellow';
+			ctx.fillRect(this.backX - this.radius, newY, this.radius * 2, newH+1);
+			*/
+
+			ctx.beginPath();
+			ctx.arc(this.backX, this.backY, this.radius, 0, Math.PI*2, false);
+			ctx.closePath();
+			ctx.fillStyle = 'black';
+			ctx.fill();
+			
 			ctx.beginPath();
 			ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2, false);
 			ctx.closePath();
@@ -727,8 +796,12 @@ drawHUD: function(ctx){
 				}
 				
 			}
-			this.x += this.xSpeed * this.speed * dt;
-			this.y += this.ySpeed * this.speed * dt;
+			var xMove = this.xSpeed * this.speed * dt;
+			var yMove = this.ySpeed * this.speed * dt;
+			this.x += xMove;
+			this.y += yMove;
+			this.backX = this.x - xMove;
+			this.backY = this.y - yMove;
 		};
 			var c = {};
 			c.x = canvas.width / 2;
@@ -739,6 +812,8 @@ drawHUD: function(ctx){
 			//var randomVector = getRandomUnitVector();
 			c.xSpeed = 0;
 			c.ySpeed = 0;
+			c.backX = 0;
+			c.backY = 0;
 
 			c.speed = this.CIRCLE.MAX_SPEED;
 			c.fillStyle = 'white';

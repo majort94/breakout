@@ -125,7 +125,11 @@ function Shape(x, y, w, h, fill, type, angle, row, rowIndex) {
 }
 
 function drawMap(){
-	
+	ctx.save();
+	ctx.fillStyle = 'black';
+	ctx.fillRect(0,0, app.main.canvas.width, app.main.canvas.height);
+	ctx.restore();
+
 	for (var i = 0; i < blocks.length; i++) {
 		ctx.save();
 		ctx.fillStyle = blocks[i].fill;

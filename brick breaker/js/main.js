@@ -415,10 +415,8 @@ checkForCollisions: function(dt){
 				for(var j = 0; j < blocks.length; j ++){
 					if(checkIntersectBlock(c1, blocks[j])){
 						c1.ySpeed *= -1; 
-						console.log("i " + blocks[j].row);
-						console.log("j " + blocks[j].rowIndex);
-						blocks[j].health--;
-						lethalStatusCheck(blocks[j].row, blocks[j].rowIndex);
+						blocks[j].beenHit(c1);
+						
 						return;
 					}
 				}
@@ -530,7 +528,22 @@ checkForCollisions: function(dt){
 		drawMap();
 		//this.drawBall(this.ctx, dt, this.ball, this.player, app.main);
 		this.moveCircles(dt);
+
+		//check DOT
+		for (var i = 0; i < blocks.length; i ++)
+		{
+			if (blocks[i].fill == "yellow")
+			{
+				shapeRowAll[blocks[i].row][blocks[i].rowIndex].tickDOT();
+			}
+			lethalStatusCheck(blocks[i].row, blocks[i].rowIndex);	
+		}
+
+		//check ball brick collisions
 		this.checkForCollisions(dt);
+		for (var i = 0; i < blocks.length; i ++)
+			{ lethalStatusCheck(blocks[i].row, blocks[i].rowIndex);	}
+
 		this.drawCircles(this.ctx);
 
 
@@ -815,6 +828,4 @@ drawHUD: function(ctx){
 	
 		} // end for loop
 	}
-    
-    
 }; // end app.main

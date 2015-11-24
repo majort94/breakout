@@ -532,7 +532,7 @@ checkForCollisions: function(dt){
 		//check DOT
 		for (var i = 0; i < blocks.length; i ++)
 		{
-			if (blocks[i].fill == "yellow")
+			if (blocks[i].burn || blocks[i].poison)
 			{
 				shapeRowAll[blocks[i].row][blocks[i].rowIndex].tickDOT();
 			}

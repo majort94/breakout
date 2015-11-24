@@ -24,6 +24,11 @@
 			spawns an extra ball in the field for a short duration
 	8 : portal brick
 			teleports player to the other portal brick
+	...
+	9 : poison trigger
+			surrounding bricks become poisoned bricks
+	10: poisoned brick
+			burns twice as fast as fire bricks, disintegrates ball on contact
 	*/
 	var canvas = document.querySelector('canvas');
 	var ctx = this.canvas.getContext('2d');
@@ -36,11 +41,11 @@
 	var typeRow0 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 	var typeRow1 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 	var typeRow2 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-	var typeRow3 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-	var typeRow4 = [0,0,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,0,0,0];
-	var typeRow5 = [0,0,0,1,0,4,0,1,0,0,0,1,0,3,0,1,0,0,0,0];
-	var typeRow6 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-	var typeRow7 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+	var typeRow3 = [0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0];
+	var typeRow4 = [0,0,0,1,0,0,0,1,0,0,0,1,1,1,1,1,0,0,0,0];
+	var typeRow5 = [0,0,0,0,0,11,0,0,0,0,0,1,0,3,0,1,0,0,0,0];
+	var typeRow6 = [0,0,0,1,0,0,0,1,0,0,0,1,0,0,1,1,0,0,0,0];
+	var typeRow7 = [0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0];
 	var typeRow8 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 	var typeRowAll = [typeRow0, typeRow1, typeRow2, typeRow3, typeRow4, typeRow5, typeRow6, typeRow7, typeRow8];
 
@@ -90,7 +95,7 @@ function makeMap1(){
 			if(typeRowAll[i][j] != 0){
 				//var pick = getRandomInt(0, app.main.colors.length);
 				
-				var temp = new Shape(((BLOCK.piece).toFixed()) * (j), (BLOCK.height0).toFixed() * i, (BLOCK.piece).toFixed() * 2, (BLOCK.height0).toFixed(), changeBrickFill(typeRowAll[i][j]), typeRowAll[i][j], shapeRowAll[i][j], i, j);
+				var temp = new Shape(((BLOCK.piece).toFixed()) * (j), (BLOCK.height0).toFixed() * i, (BLOCK.piece).toFixed() * 2, (BLOCK.height0).toFixed(), typeRowAll[i][j], shapeRowAll[i][j], i, j);
 				//blocks.push(new Shape(((BLOCK.piece).toFixed()) * (j), (BLOCK.height0).toFixed() * i, (BLOCK.piece).toFixed() * 2, (BLOCK.height0).toFixed(), tempFill, typeRowAll[i][j], shapeRowAll[i][j], i, j));
 				blocks.push(temp);
 				//shapeRowAll[i][i] = new Shape(((BLOCK.piece).toFixed()) * (j), (BLOCK.height0).toFixed() * i, (BLOCK.piece).toFixed() * 2, (BLOCK.height0).toFixed(), tempFill, typeRowAll[i][j], shapeRowAll[i][j], i, j);
@@ -100,7 +105,7 @@ function makeMap1(){
 	}
 }
 
-function Shape(x, y, w, h, fill, type, angle, row, rowIndex) {
+function Shape(x, y, w, h, type, angle, row, rowIndex) {
     this.x = x;
     this.y = y;
     this.w = w;
@@ -109,27 +114,75 @@ function Shape(x, y, w, h, fill, type, angle, row, rowIndex) {
     this.angle = angle;
     this.row = row;
     this.rowIndex = rowIndex;
-    this.fill = fill;
     this.health = 1;
     this.lifespan = 1;
-    switch (type)
+    this.burn = false;
+    this.poison = false;
+    this.otherPortal = null;
+    this.filePaths = function () { // MOVE TO MAP
+    	this.normalBrick = 'resources/wood/normal_brick.png';
+    	this.iceBrick = null;
+    	this.normalSocket = null;
+    	this.iceSocket = null;
+    	this.iceTrigger = null;
+    	this.fireTrigger = null;
+    	this.poisonTrigger = null;
+    	this.fireAlpha = null;
+    	this.poisonAlpha = null;
+    }
+    switch (type) // will remove fills after drawMap and collision are fixed to work with images // REMOVE
     {
-    	case 1:
-    		//this.fill - ; DEFINE ART PER TYPE / will need to modify changeFillType()
-    	case 2:
-    	case 3:
-    	case 6:
-    	case 7:
-    	case 8:
+    	case 1: //normal brick
+    		this.fill = "wheat";
+    		this.filePaths.normal = 'resources/wood/normal_brick.png';
+    		break;
+    	case 2: // ice trigger
+    		this.fill = "blue";
+    		this.filePath = 'resources/wood/normal_brick.png';
+    		break;
+    	case 3: // fire trigger
+    		this.fill = "red";
+    		this.filePath = 'resources/wood/normal_brick.png';
+    		break;
+    	case 9: // poison trigger
+    		this.fill = "green";
+    		break;
+
+    	case 6: // burning brick
+    		this.fill = "orange";
+    		break;
+    	case 10: // poisoned brick
+    		this.fill = "lightgreen";
     		break;
     	case 4: // stone take twice normal to kill
     		this.health = 2;
     		this.lifespan = 2;
+    		this.fill = "brown";
     		break;
     	case 5: // frozen have twice hp but half burn
     		this.heath = 2;
     		this.lifespan = .5;
+    		this.fill = "aqua";
     		break;
+
+    	case 7: // double ball brick
+    		break;
+    	case 8: // portal brick -- STARTED
+    		for (var i = 0; i < blocks.length; i++)
+    		{
+    			// find portals
+    			if (blocks[i].type = 8)
+    			{
+    				// check not self
+    				if ((blocks[i].row != this.row) && (blocks[i].rowIndex != this.rowIndex))
+    				{
+    					this.otherPortal = (blocks[i].row, blocks[i].rowIndex);
+    				}
+    			}
+    		}
+    		break;
+
+    	
     	default:
     		break;
     }
@@ -137,22 +190,29 @@ function Shape(x, y, w, h, fill, type, angle, row, rowIndex) {
     	this.health -= 1;
     	switch (type)
     	{
-    		case 5: // ice brick
-    			// apply chill to ball
-    			break;
-    		case 6: // fire brick
-    			// apply speed boost to ball
-    			break;
-
     		case 2: // ice trigger
     			applyEffectsToBricks(referenceSurroundingBricks(this), 5);
     			break;
     		case 3: // fire trigger
     			applyEffectsToBricks(referenceSurroundingBricks(this), 6);
     			break;
+    		case 9: // poison trigger
+    			applyEffectsToBricks(referenceDiagonalBricks(this), 10);
+    			break;
+    		case 5: // ice brick
+    			// apply chill to ball
+    			break;
+    		case 6: // fire brick
+    			// apply speed boost to ball
+    			break;
+    		case 10: // poison brick
+    			// apply disintigrationg to ball
+    			break;
 
     		case 7: // double ball brick
-    			//
+    			// spawn second ball 
+    		case 8: // portal brick
+    			// teleport ball to other portal
     			break;
     		default:
     			break;
@@ -160,6 +220,7 @@ function Shape(x, y, w, h, fill, type, angle, row, rowIndex) {
     };
     this.firstBurn = true;
     this.lastTick = null;
+    this.burnRate = 4000;
     this.tickDOT = function() {
     	if (this.firstBurn) 
     	{ 
@@ -172,11 +233,11 @@ function Shape(x, y, w, h, fill, type, angle, row, rowIndex) {
     	{ 
     		this.timer = (new Date()).getTime(); 
     		//console.log("TIMER TICK || Timer: " + this.timer + ", LastTick: " + this.lastTick);
-    		if (this.timer > (this.lastTick + 4000)) // burn lasts 4 seconds
+    		if (this.timer > (this.lastTick + this.burnRate)) // burn lasts 4 seconds
 			{
 				for (var i = 0; i < blocks.length; i++)
 				{
-					if (blocks[i].type == 6)
+					if (blocks[i].burn || blocks[i].poison)
 					{
 						shapeRowAll[blocks[i].row][blocks[i].rowIndex].lifespan -= .25;
 						this.lastTick = date.getTime();
@@ -185,12 +246,31 @@ function Shape(x, y, w, h, fill, type, angle, row, rowIndex) {
 			}
     	}
     };
+    this.draw = function() {
+    	/*
+    	//brick
+    	ctx.drawImage();
+    	//socket and orb
+    	if (this.type == 2 || 3 || 7 || 8 || 9) 
+    		{ ctx.drawImage(); }
+    	// fire alpha
+    	if (this.burn) 
+    		{ ctx.drawImage(); }
+    	//poison alpha
+    	if (this.poison)
+    		{ ctx.drawImage(); }
+    	*/
+    };
 }
 
 function drawMap(){
 	
 	for (var i = 0; i < blocks.length; i++) {
 		ctx.save();
+
+		/*
+		blocks[i].draw();
+		*/
 
 		//
 		ctx.fillStyle = blocks[i].fill;
@@ -236,78 +316,151 @@ function referenceSurroundingBricks(trigger) {
 	var xIndexArray = [];
 	var yIndexArray = [];
 	var referenceArrays = [xIndexArray, yIndexArray];
+	// REFERENCE ARRAY OF BRICKS - has two elements, each an array of their respective indexes
 
 	var maxRowIndex = typeRowAll.length;
 	var maxWithinRowIndex = typeRowAll[0].length;
 
-	//statements check if surrounding bricks would be within the max width/height and if they are normal brick type (triggers can't be transformed to effect types)
-	// COMPASS KEY
+	// COMPASS KEY - ifs check if target within map, not null, and is a normal brick
 	// NW
-	if ((trigger.row > 0) && (trigger.rowIndex > 0) && (typeRowAll[trigger.row -1][trigger.rowIndex -2] == 1))
+	if ((trigger.row > 0) && (trigger.rowIndex > 0) && (typeRowAll[trigger.row -1][trigger.rowIndex -2] != null) && (typeRowAll[trigger.row -1][trigger.rowIndex -2] == 1))
 		{ xIndexArray.push(trigger.row - 1); yIndexArray.push(trigger.rowIndex - 2); }
-			//referenceArray.push((trigger.row -1, trigger.rowIndex -2)); }
+	// NW.5
+	if ((trigger.row > 0) && (trigger.rowIndex > 0) && (typeRowAll[trigger.row -1][trigger.rowIndex -1] != null) && (typeRowAll[trigger.row -1][trigger.rowIndex -1] == 1))
+		{ xIndexArray.push(trigger.row - 1); yIndexArray.push(trigger.rowIndex - 1); }
 	// N
-	if ((trigger.row > 0) && (typeRowAll[trigger.row -1][trigger.rowIndex] == 1))
+	if ((trigger.row > 0) && (typeRowAll[trigger.row -1][trigger.rowIndex] != null) && (typeRowAll[trigger.row -1][trigger.rowIndex] == 1))
 		{ xIndexArray.push(trigger.row - 1); yIndexArray.push(trigger.rowIndex); }
-		//{ referenceArray.push((trigger.row -1, trigger.rowIndex)); }
+	// NE.5
+	if ((trigger.row > 0) && (trigger.rowIndex <= maxWithinRowIndex -2) && (typeRowAll[trigger.row -1][trigger.rowIndex +1] != null)  && (typeRowAll[trigger.row -1][trigger.rowIndex +1] == 1))
+		{ xIndexArray.push(trigger.row - 1); yIndexArray.push(trigger.rowIndex + 1); }
 	// NE
-	if ((trigger.row > 0) && (trigger.rowIndex <= maxWithinRowIndex -2) && (typeRowAll[trigger.row -1][trigger.rowIndex +2] == 1))
+	if ((trigger.row > 0) && (trigger.rowIndex <= maxWithinRowIndex -2) && (typeRowAll[trigger.row -1][trigger.rowIndex +2] != null) && (typeRowAll[trigger.row -1][trigger.rowIndex +2] == 1))
 		{ xIndexArray.push(trigger.row - 1); yIndexArray.push(trigger.rowIndex + 2); }
-		//{ referenceArray.push((trigger.row -1, trigger.rowIndex +2)); }
 	// E
-	if ((trigger.rowIndex <= maxWithinRowIndex -2) && (typeRowAll[trigger.row][trigger.rowIndex +2] == 1))
+	if ((trigger.rowIndex <= maxWithinRowIndex -2) && (typeRowAll[trigger.row][trigger.rowIndex +2] != null)&& (typeRowAll[trigger.row][trigger.rowIndex +2] == 1))
 		{ xIndexArray.push(trigger.row); yIndexArray.push(trigger.rowIndex + 2); }
-		//{ referenceArray.push((trigger.row, trigger.rowIndex +2)); }
 	// SE
-	if ((trigger.row <= maxRowIndex -2) && (trigger.rowIndex <= maxWithinRowIndex -2) && (typeRowAll[trigger.row +1][trigger.rowIndex +2] == 1))
+	if ((trigger.row <= maxRowIndex -2) && (trigger.rowIndex <= maxWithinRowIndex -2) && (typeRowAll[trigger.row +1][trigger.rowIndex +2] != null) && (typeRowAll[trigger.row +1][trigger.rowIndex +2] == 1))
 		{ xIndexArray.push(trigger.row + 1); yIndexArray.push(trigger.rowIndex + 2); }
-		//{ referenceArray.push((trigger.row +1, trigger.rowIndex +2)); }
+	// SE.5
+	if ((trigger.row <= maxRowIndex -2) && (trigger.rowIndex <= maxWithinRowIndex -2) && (typeRowAll[trigger.row +1][trigger.rowIndex +1] != null) && (typeRowAll[trigger.row +1][trigger.rowIndex +1] == 1))
+		{ xIndexArray.push(trigger.row + 1); yIndexArray.push(trigger.rowIndex + 1); }
 	// S
-	if ((trigger.row <= maxRowIndex -2) && (typeRowAll[trigger.row +1][trigger.rowIndex] == 1))
+	if ((trigger.row <= maxRowIndex -2) && (typeRowAll[trigger.row +1][trigger.rowIndex] != null) && (typeRowAll[trigger.row +1][trigger.rowIndex] == 1))
 		{ xIndexArray.push(trigger.row + 1); yIndexArray.push(trigger.rowIndex); }
-		//{ referenceArray.push((trigger.row +1, trigger.rowIndex)); }
+	// SW.5
+	if ((trigger.row <= maxRowIndex -2) && (trigger.rowIndex > 0) && (typeRowAll[trigger.row +1][trigger.rowIndex -1] != null) && (typeRowAll[trigger.row +1][trigger.rowIndex -1] == 1))
+		{ xIndexArray.push(trigger.row + 1); yIndexArray.push(trigger.rowIndex - 1); }
 	// SW
-	if ((trigger.row <= maxRowIndex -2) && (trigger.rowIndex > 0) && (typeRowAll[trigger.row +1][trigger.rowIndex -2] == 1))
+	if ((trigger.row <= maxRowIndex -2) && (trigger.rowIndex > 0) && (typeRowAll[trigger.row +1][trigger.rowIndex -2] != null) && (typeRowAll[trigger.row +1][trigger.rowIndex -2] == 1))
 		{ xIndexArray.push(trigger.row + 1); yIndexArray.push(trigger.rowIndex - 2); }
-		//{ referenceArray.push((trigger.row +1, trigger.rowIndex -2)); }
 	// W
 	if ((trigger.rowIndex > 0) && (typeRowAll[trigger.row][trigger.rowIndex -2] == 1))
 		{ xIndexArray.push(trigger.row); yIndexArray.push(trigger.rowIndex - 2); }
-		//{ referenceArray.push((trigger.row, trigger.rowIndex -2)); }
 
 	return referenceArrays;
-
-	// create two reference arrays. one for x and one for y pushes. they will be merged into a final referenceArray to be passed and referenced as referenceArray[x or y (0/1)][index]
 }
 
-function applyEffectsToBricks(bricksArray, effect)
+/*
+function referenceDiagonalBricks(trigger, radius) {
+	var xIndexArray = [];
+	var yIndexArray = [];
+	var referenceArrays = [xIndexArray, yIndexArray];
+	// REFERENCE ARRAY OF BRICKS - has two elements, each an array of their respective indexes
+	var maxRowIndex = typeRowAll.length;
+	var maxWithinRowIndex = typeRowAll[0].length;
+
+	var tempX = 0;
+	var tempY = 0;
+	var compensation = 1;
+
+	// iterate through each 4 diagonals
+	for (var i = 0; i < 4; i++)
+	{
+		switch (i)
+		{
+			case 0:
+				tempY = -1;
+				tempX = -2;
+				break;
+			case 1:
+				tempY = -1;
+				tempX = 2;
+				break;
+			case 2:
+				tempY = 1;
+				tempX = 2;
+				break;
+			case 3:
+				tempY = 1;
+				tempX = -2;
+				break;
+		}
+		
+		for (var j = 0; j < 2; j++)
+		{
+			// increment tempX and tempY for each iteration, in order to reference the next brick in that diagonal direction
+			tempX = tempX + (tempX * j);
+			tempY = tempY + (tempY * j);
+
+			// checking if diagonals are within map
+			if ((trigger.row + tempY > 0) || (trigger.row + tempY <= shapeRowAll.length))
+			{
+				if ((trigger.rowIndex + tempX > 0) || (trigger.rowIndex + tempX <= shapeRow0.length))
+				{
+					//null check / normal brick
+					if (shapeRowAll[trigger.row + tempY][trigger.rowIndex + tempX] != null)
+					{
+						if ((typeRowAll[trigger.row + tempY][trigger.rowIndex + tempX] == 1))
+						{ 
+							xIndexArray.push(trigger.row + tempY); yIndexArray.push(trigger.rowIndex + tempX); 
+						}
+					}
+				}
+			}
+		}
+	}
+	return referenceArrays;
+} */
+
+function applyEffectsToBricks(bricksArray, effect) // used by elemental triggers
 {
 	for (var i=0; i < bricksArray[0].length; i++)
 	{
-
-		//check if bricks are there
-		//console.log('row ' + bricksArray[i][0]);
-		//console.log('rowIndex ' + bricksArray[i][1]);
-		typeRowAll[bricksArray[0][i]][bricksArray[1][i]] = effect;
-		shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].type = effect;
-		shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].fill = changeBrickFill(effect);
 		switch (effect)
 		{
 			//Freeze
 			case 5:
-				//freezing stops burn effects
-				if (shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].type == 6) 
-					{ shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].lifespan = 0; }
-				shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].health = 2;
+				//switches to ice brick type
+				typeRowAll[bricksArray[0][i]][bricksArray[1][i]] = effect;
+				shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].type = effect;
+				//change to ice brick fill
+				shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].fill = "aqua";
+				//stops burns and adds defense
+				shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].burn = false;
+				shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].health += 1;
 				break;
 			//Burn
 			case 6:
+				//apply burn alpha layer
+				// ------------
+				shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].fill = "orange";
 				//ice burns twice as fast as normal
 				if (shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].type == 5) 
-					{ }
-					//shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].lifespan = .5; }
-				shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].lifespan = 1;
+					{ shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].burnRate = 2000; }
+				shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].burn = true;
 				break;
+			//Poison
+			case 10:
+				//apply poison alpha layer
+				// --------------
+				shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].fill = "lightgreen"
+				//twice fire burn speed
+				shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].poison = true;
+				shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].burnRate = 2000;
+				break;
+
 			default:
 				break;
 		}
@@ -351,32 +504,4 @@ function deleteBrick(i, j){
 			blocks.splice(g, 1);
 		}
 	}
-}
-
-function changeBrickFill(type) {
-	var tempFill;
-	switch (type)
-	{
-		case 1: // normal
-			tempFill = "wheat";
-			break;
-		case 2: // ice trigger
-			tempFill = "blue";
-			break;
-		case 3: // fire trigger
-			tempFill = "red";
-			break;
-		case 4: // stone brick
-			tempFill = "brown";
-			break;
-		case 5: // ice brick
-			tempFill = "aqua";
-			break;
-		case 6: // fire brick
-			tempFill = "yellow";
-			break;
-		case 7: // double ball
-			break;
-	}
-	return tempFill;
 }

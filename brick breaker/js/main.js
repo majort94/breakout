@@ -417,6 +417,7 @@ checkForCollisions: function(dt){
 						c1.ySpeed *= -1; 
 						blocks[j].health--;
 						lethalStatusCheck(blocks[j].row, blocks[j].rowIndex);
+						blocks[j].beenHit(c1);
 						return;
 					}
 				}
@@ -528,7 +529,22 @@ checkForCollisions: function(dt){
 		drawMap();
 		//this.drawBall(this.ctx, dt, this.ball, this.player, app.main);
 		this.moveCircles(dt);
+
+		//check DOT
+		for (var i = 0; i < blocks.length; i ++)
+		{
+			if (blocks[i].burn || blocks[i].poison)
+			{
+				shapeRowAll[blocks[i].row][blocks[i].rowIndex].tickDOT();
+			}
+			lethalStatusCheck(blocks[i].row, blocks[i].rowIndex);	
+		}
+
+		//check ball brick collisions
 		this.checkForCollisions(dt);
+		for (var i = 0; i < blocks.length; i ++)
+			{ lethalStatusCheck(blocks[i].row, blocks[i].rowIndex);	}
+
 		this.drawCircles(this.ctx);
 
 
@@ -796,6 +812,4 @@ drawHUD: function(ctx){
 	
 		} // end for loop
 	}
-    
-    
 }; // end app.main

@@ -42,20 +42,10 @@
 	var typeRow1 = [1,0,1,0,0,0,0,1,0,0,1,0,0,1,0,1,0,0,0,0];
 	var typeRow2 = [1,0,1,0,0,0,0,0,1,0,1,0,0,1,0,1,0,0,0,0];
 	var typeRow3 = [1,0,1,0,0,0,0,0,1,0,1,0,0,0,1,0,0,0,0,0];
-	var typeRow4 = [1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,0,0,0,0];
-	var typeRow5 = [1,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,0,0,0,0];
-	var typeRow6 = [1,0,1,0,1,0,1,0,1,0,1,0,0,0,0,0,1,0,0,0];
-	var typeRow7 = [1,0,1,0,1,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0];
-
-	var typeRow0 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-	var typeRow1 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-	var typeRow2 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-	var typeRow3 = [0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0];
-	var typeRow4 = [0,0,0,1,0,0,0,1,0,0,0,1,1,1,1,1,0,0,0,0];
-	var typeRow5 = [0,0,0,0,0,11,0,0,0,0,0,1,0,3,0,1,0,0,0,0];
-	var typeRow6 = [0,0,0,1,0,0,0,1,0,0,0,1,0,0,1,1,0,0,0,0];
-	var typeRow7 = [0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0];
-
+	var typeRow4 = [1,0,1,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0];
+	var typeRow5 = [1,0,1,0,1,0,3,0,1,0,1,0,1,0,1,0,0,0,0,0];
+	var typeRow6 = [1,0,2,0,1,0,1,0,1,0,1,0,9,0,1,0,1,0,0,0];
+	var typeRow7 = [1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0];
 	var typeRow8 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 	var typeRowAll = [typeRow0, typeRow1, typeRow2, typeRow3, typeRow4, typeRow5, typeRow6, typeRow7, typeRow8];
 
@@ -215,7 +205,7 @@ function Shape(x, y, w, h, type, angle, row, rowIndex) {
     		break;
     }
     this.beenHit = function(ball) {
-    	this.health -= 1;
+    	
     	switch (type)
     	{
     		case 2: // ice trigger
@@ -225,16 +215,20 @@ function Shape(x, y, w, h, type, angle, row, rowIndex) {
     			applyEffectsToBricks(referenceSurroundingBricks(this), 6);
     			break;
     		case 9: // poison trigger
-    			applyEffectsToBricks(referenceDiagonalBricks(this), 10);
+    			applyEffectsToBricks(referenceSurroundingBricks(this), 10);
     			break;
     		case 5: // ice brick
     			// apply chill to ball
     			break;
     		case 6: // fire brick
     			// apply speed boost to ball
+    			console.log('pass');
+    			ball.xSpeed *= 2;
+    			ball.ySpeed *= 2;
     			break;
     		case 10: // poison brick
     			// apply disintigrationg to ball
+
     			break;
 
     		case 7: // double ball brick
@@ -245,6 +239,7 @@ function Shape(x, y, w, h, type, angle, row, rowIndex) {
     		default:
     			break;
     	}
+    	this.health -= 1;
     };
     this.firstBurn = true;
     this.lastTick = null;
@@ -483,7 +478,7 @@ function applyEffectsToBricks(bricksArray, effect) // used by elemental triggers
 			case 10:
 				//apply poison alpha layer
 				// --------------
-				shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].fill = "lightgreen"
+				shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].fill = "lightgreen";
 				//twice fire burn speed
 				shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].poison = true;
 				shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].burnRate = 2000;

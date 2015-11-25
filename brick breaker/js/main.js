@@ -116,14 +116,6 @@ app.main = {
 		//this.reset();
 		this.totalScore = 0;
 		this.lives = this.MAX_LIVES;
-		document.querySelector("#fsButton").onclick = function(){
-			if(this.first){
-				app.main.setupFullscreen();
-
-			}else{
-				app.main.makeFullscreen();
-			}
-		};
 
 		this.player = {
 	   		w: 100,
@@ -415,9 +407,8 @@ checkForCollisions: function(dt){
 				for(var j = 0; j < blocks.length; j ++){
 					if(checkIntersectBlock(c1, blocks[j])){
 						c1.ySpeed *= -1; 
-						blocks[j].health--;
-						lethalStatusCheck(blocks[j].row, blocks[j].rowIndex);
 						blocks[j].beenHit(c1);
+						lethalStatusCheck(blocks[j].row, blocks[j].rowIndex);
 						return;
 					}
 				}

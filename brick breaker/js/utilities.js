@@ -161,8 +161,8 @@ function calculateAngle(c1){
 	var tempX1 = 0;
 	//console.log('yehs ' + tempX);
 	console.log('xspde ' + c1.xSpeed);
-	console.log('c1 ' + c1.x);
-	console.log('player ' + app.main.player.x);
+	//console.log('c1 ' + c1.x);
+	//console.log('player ' + app.main.player.x);
 
 	/*
 	if(c1.x < middle){
@@ -195,7 +195,7 @@ function calculateAngle(c1){
 			tempX1 = tempX / (app.main.player.w);
 			if((c1.xSpeed > -.15) && (c1.x > middle)){
 				change = true;
-				c1.xSpeed -= .2;
+				c1.xSpeed -= .4;
 			}
 			c1.xSpeed -= .4;
 			c1.xSpeed *=  (1 - tempX1);
@@ -203,7 +203,7 @@ function calculateAngle(c1){
 			tempX1 = tempX / (app.main.player.w);
 			if((c1.xSpeed < .15) && (c1.x < middle)){
 				change = true;
-				c1.xSpeed += .2;
+				c1.xSpeed += .4;
 			}
 			c1.xSpeed += .4;
 			c1.xSpeed  *=  (tempX1);
@@ -215,4 +215,23 @@ function calculateAngle(c1){
 			console.log("Change");
 		}
 		console.log('c1.xSpeed ' + c1.xSpeed);
+}
+
+
+function angle(cx, cy, ex, ey) {
+  var dy = ey - cy;
+  var dx = ex - cx;
+  var theta = Math.atan2(dy, dx); // range (-PI, PI]
+  //theta *= 180 / Math.PI; // rads to degs, range (-180, 180]
+  //if (theta < 0) theta = 360 + theta; // range [0, 360)
+  return theta;
+}
+
+function angleDeg(cx, cy, ex, ey) {
+  var dy = ey - cy;
+  var dx = ex - cx;
+  var theta = Math.atan2(dy, dx); // range (-PI, PI]
+  theta *= 180 / Math.PI; // rads to degs, range (-180, 180]
+  //if (theta < 0) theta = 360 + theta; // range [0, 360)
+  return theta;
 }

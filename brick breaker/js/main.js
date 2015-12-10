@@ -20,10 +20,14 @@ app.main = {
     WIDTH : 1200, 
     HEIGHT: 700,
     canvas: undefined,
+    canvas1: undefined,
     ctx: undefined,
+    ctx1: undefined,
    	lastTime: 0, // used by calculateDeltaTime() 
     debug: false,
     first: true,
+    fps: 0,
+    fpsShow: 0,
     paused: false,
     pauseCircles: true,
     // draw map
@@ -94,11 +98,16 @@ app.main = {
 	init : function() {
 		console.log("app.main.init() called");
 		// initialize properties
-		this.canvas = document.querySelector('canvas');
+		this.canvas = document.querySelector('#canvas1');
+		this.canvas1 = document.querySelector('#canvas2');
 		this.canvas.width = this.WIDTH;
 		this.canvas.height = this.HEIGHT;
+		this.canvas1.width = this.WIDTH;
+		this.canvas1.height = this.HEIGHT;
 		this.ctx = this.canvas.getContext('2d');
+		this.ctx1 = this.canvas1.getContext('2d');
 
+		makeMap1();
 		/* Performance tweaks */
 		this.ctx.shadowBlur = 0;
 		
@@ -147,7 +156,7 @@ app.main = {
    		};
    		this.gameState = this.GAME_STATE.BEGIN;
    		//this.drawHUD(this.ctx);
-   		makeMap1();
+   		
 		//this.drawPlayer(this.ctx, this.player);
 		this.update();
 
@@ -214,6 +223,11 @@ app.main = {
 		//console.log(myKeys.keydown[37]);
 		var movePlayer = function(){
 
+		if(myKeys.keydown[myKeys.KEYBOARD.KEY_SPACE]){
+			ctx.fillStyle = 'red';
+		}else{
+			ctx.fillStyle = 'white';
+
 			if(myKeys.keydown[37]){
 				// move left
 				if(player.x > 0){
@@ -223,28 +237,31 @@ app.main = {
 			}
 			if(myKeys.keydown[39]){
 				// move right
-				if(player.x < canvas.width){
+				if(player.x + player.w < canvas.width){
 					player.x += player.SPEED;
 					player.backFill = 2;
 				}
 			}
-
+		}
 
 
 		};
 		
+		// movePlayer sets the fill
 		movePlayer();
-		ctx.fillStyle = 'white';
+		
 		//ctx.fillRect(150, 150, 50, 50);
 		ctx.fillRect(player.x, player.y, player.w, player.h);
 
 		ctx.fillStyle = 'black';
 		switch(player.backFill){
 			case 1:
+				ctx.clearRect((player.x + player.w), player.y, player.SPEED, player.h);
 				ctx.fillRect((player.x + player.w), player.y, player.SPEED, player.h);
 				player.backFill = 0;
 				break;
 			case 2:
+				ctx.clearRect((player.x - player.SPEED), player.y, player.SPEED, player.h);
 				ctx.fillRect((player.x - player.SPEED), player.y, player.SPEED, player.h);
 				player.backFill = 0;
 				break;
@@ -411,6 +428,7 @@ checkForCollisions: function(dt){
 						if(this.lives != 0){
 							this.resetGame();
 						}
+						//this.drawHUD(this.ctx);
 						return;
 						break;
 					default:
@@ -439,10 +457,14 @@ checkForCollisions: function(dt){
 				
 				for(var j = 0; j < blocks.length; j ++){
 					if(checkIntersectBlock(c1, blocks[j])){
-						c1.ySpeed *= -1; 
+						if((c1.y > blocks[j].y) || ((c1.y) < blocks[j].y))
+							c1.ySpeed *= -1; 
+						if((c1.x< blocks[j].x) || ((c1.x) > blocks[j].x + blocks[j].w))
+							c1.xSpeed *= -1;
 						blocks[j].health--;
 						lethalStatusCheck(blocks[j].row, blocks[j].rowIndex);
 						this.doMap = true;
+						//this.drawHUD(this.ctx);
 						return;
 					}
 				}
@@ -510,12 +532,14 @@ checkForCollisions: function(dt){
 
 	drawPauseScreen: function(ctx){
 		ctx.save();
-		ctx.fillStyle = "black";
-		ctx.fillRect(0,0,this.WIDTH,this.HEIGHT);
+		//ctx.fillStyle = "black";
+		//ctx.fillRect(0,0,this.WIDTH,this.HEIGHT);
+		//ctx.clearRect(0,0, this.WIDTH, this.HEIGHT);
 		ctx.textAlign = "center";
 		ctx.textBaseline = "middle";
-		this.fillText(this.ctx, "... PAUSED ...", this.WIDTH/2, this.HEIGHT/2, "40pt courier", "white");
+		this.fillText(ctx, "PAUSED", this.WIDTH/2, this.HEIGHT - 100, "40pt courier", "red");
 		ctx.restore();
+		//window.cancelAnimationFrame(this.animationID);
 	},
 	
 	update: function(){
@@ -527,46 +551,44 @@ checkForCollisions: function(dt){
 	 	// 2) PAUSED?
 	 	// if so, bail out of loop
 	 	if(this.paused){
-	 		this.drawPauseScreen(this.ctx);
+	 		this.drawPauseScreen(this.ctx1);
+	 		window.cancelAnimationFrame(this.animationID);
 	 		return;
 	 	}
 
-	 	
 	 	// 3) HOW MUCH TIME HAS GONE BY?
 	 	var dt = this.calculateDeltaTime();
 	 	 
 	 	// 4) UPDATE
 	 	// move circles.
-
 	 	// TSMITH -- when text is on the screen, stop moving the circles
-	 	if(!this.pauseCircles){
-		 	//this.moveCircles(dt);
-		 	//this.checkForCollisions();
-		 }
 		// 5) DRAW	
 		// i) draw background
 		this.ctx.fillStyle = "black"; 
 		//this.ctx.fillRect(0,0,this.WIDTH,this.HEIGHT); 
 		this.ctx.fillRect(0, this.canvas.HEIGHT - 100, this.canvas.width, 100);
+		this.ctx1.clearRect(0,0, app.main.canvas1.width, app.main.canvas1.height);
 	
 		// ii) draw circles
 		this.ctx.globalAlpha = 0.9;
-		this.drawPlayer(this.ctx, this.player);
+
 		//drawMap();
 		//this.drawBall(this.ctx, dt, this.ball, this.player, app.main);
 		this.moveCircles(dt);
 		this.checkForCollisions(dt);
-		this.drawCircles(this.ctx);
+		this.drawCircles(this.ctx1);
+
+		this.drawPlayer(this.ctx1, this.player);
 
 		if(this.doMap){
 			drawMap();
+			//this.drawHUD();
 			this.doMap = false;
 		}
 
-	
 		// iii) draw HUD
-		this.ctx.globalAlpha = 1.0;
-		this.drawHUD(this.ctx);
+		//this.ctx.globalAlpha = 1.0;
+		//this.drawHUD(this.ctx);
 
 		if(this.gameState == this.GAME_STATE.BEGIN || this.gameState == this.GAME_STATE.ROUND_OVER){
 			if(myKeys.keydown[myKeys.KEYBOARD.KEY_UP] && myKeys.keydown[myKeys.KEYBOARD.KEY_SHIFT]){
@@ -579,18 +601,16 @@ checkForCollisions: function(dt){
 			// draw dt in bottom right corner
 			this.fillText(this.ctx, "dt: " + dt.toFixed(3), this.WIDTH - 150, this.HEIGHT - 10, "18pt courier", "white");
 		}
+
+		//this.ctx1.drawImage(this.canvas1, 0, 0);
 		
 	},
 	
 drawHUD: function(ctx){
-		ctx.save(); // NEW
+		this.ctx.save(); // NEW
+		this.ctx.globalAlpha = 1.0;
 		// draw score
       	// fillText(string, x, y, css, color)
-		//this.fillText(this.ctx, "This Round: " + this.roundScore + " of " + this.numCircles, 20, 20, "16pt courier", "#ddd");
-		//this.fillText(this.ctx, "Goal: " + this.roundGoal, 20, 40, "16pt courier", "#ddd");
-		// NEW
-		//console.log('winhe ' + window.height);
-		//console.log('screenh ' + screen.height);
 	/*	if(this.gameState == this.GAME_STATE.SMALL){
 	 		//app.main.gameState = app.main.GAME_STATE.SMALL;
 	 		//app.main.drawHUD(app.main.ctx);
@@ -630,9 +650,13 @@ drawHUD: function(ctx){
 
 
 		*/
+		ctx.clearRect(0, this.HEIGHT - 100, this.WIDTH, 100);
+		ctx.fillStyle = 'black';
+		ctx.fillRect(0, this.HEIGHT - 100, this.WIDTH, 100);
 
 		this.fillText(this.ctx, "Total Score: " + this.totalScore, 5, this.HEIGHT - 15, "16pt courier", "#ddd");
 		this.fillText(this.ctx, "Lives: " + this.lives, this.WIDTH - 125, this.HEIGHT - 15, "16pt courier", "#ddd");
+		this.fillText(this.ctx, "fps " + this.fps.toFixed(3), this.WIDTH / 2, this.HEIGHT - 50, "12pt courier", "red");
 
 		if(this.gameState == this.GAME_STATE.BEGIN){
 			ctx.textAlign = "center";
@@ -677,12 +701,12 @@ drawHUD: function(ctx){
 	
 
 	fillText: function(ctx, string, x, y, css, color) {
-		this.ctx.save();
+		ctx.save();
 		// https://developer.mozilla.org/en-US/docs/Web/CSS/font
-		this.ctx.font = css;
-		this.ctx.fillStyle = color;
-		this.ctx.fillText(string, x, y);
-		this.ctx.restore();
+		ctx.font = css;
+		ctx.fillStyle = color;
+		ctx.fillText(string, x, y);
+		ctx.restore();
 	},
 	
 	calculateDeltaTime: function(){
@@ -692,7 +716,15 @@ drawHUD: function(ctx){
 		var now,fps;
 		now = (+new Date); 
 		fps = 1000 / (now - this.lastTime);
-		fps = clamp(fps, 12, 60);
+		//console.log('fps ' + fps);
+		fps = clamp(fps, 20, 60);
+		if(this.fpsShow % 4 == 0){
+			app.main.fps = fps;
+			this.drawHUD(ctx);
+			this.fpsShow++;
+		}else{
+			this.fpsShow++;
+		}
 		this.lastTime = now; 
 		return 1/fps;
 	},
@@ -728,7 +760,7 @@ drawHUD: function(ctx){
 	makeCircles: function(num){
 		var array = [];
 		var circleDraw = function(ctx){
-			ctx.save();
+			app.main.ctx1.save();
 
 
 			var newX = 0;
@@ -760,19 +792,22 @@ drawHUD: function(ctx){
 			//ctx.fillStyle = 'yellow';
 			ctx.fillRect(this.backX - this.radius, newY, this.radius * 2, newH+1);
 			*/
+			/*
+			app.main.ctx1.beginPath();
+			app.main.ctx1.arc(this.backX - 1, this.backY - 1, this.radius + 2, 0, Math.PI*2, false);
+			app.main.ctx1.closePath();
+			app.main.ctx1.fillStyle = 'black';
+			app.main.ctx1.fill();
+			*/
 
-			ctx.beginPath();
-			ctx.arc(this.backX, this.backY, this.radius, 0, Math.PI*2, false);
-			ctx.closePath();
-			ctx.fillStyle = 'black';
-			ctx.fill();
 			
-			ctx.beginPath();
-			ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2, false);
-			ctx.closePath();
-			ctx.fillStyle = 'white';
-			ctx.fill();
-			ctx.restore();
+			
+			app.main.ctx1.beginPath();
+			app.main.ctx1.arc(this.x, this.y, this.radius, 0, Math.PI*2, false);
+			app.main.ctx1.closePath();
+			app.main.ctx1.fillStyle = 'white';
+			app.main.ctx1.fill();
+			app.main.ctx1.restore();
 		};
 
 		var circleDeath = function(){
@@ -784,16 +819,140 @@ drawHUD: function(ctx){
 			}
 		};
 
+		var rayCast = function(c, ctx){
+			ctx.save()
+			ctx.lineWidth = 5;
+			ctx.strokeStyle = '#aaa';
+			ctx.beginPath();
+			ctx.moveTo(c.x, c.y - c.radius);
+
+			var ex = c.ray.inc;
+			var y = function(){
+				//9console.log('bottom ' + map.bottomBricks);
+				for(var k=0; k<map.bottomBricks.length;k++){
+					if(map.bottomBricks[k] == null){
+						continue;
+					}
+					if(c.ray.inc < map.bottomBricks[k].x + BLOCK.piece * 2){
+						return map.bottomBricks[k].y + BLOCK.height0;
+					}
+					//console.log('bricks ' + map.bottomBricks);
+					//console.log('rayturn ' + map.rayTurn);
+					//if(c.inc > map.rayTurn){
+					//	c.Inc = false;
+					//}
+					//if(c.inc < map.rayTurn){
+					//	c.Inc = true;
+				//	}
+				}
+			};
+
+			var ey = y(); 
+			ctx.lineTo(ex, ey);
+			console.log('y ' + ey);
+			console.log('angle ' + (angle(c.x, c.y, ex, ey) ));
+			console.log('angleDeg ' + (angleDeg(c.x, c.y, ex, ey) ));
+			c.ray.angle = angle(c.x, c.y, ex, ey);
+			c.ray.angleDeg = angleDeg(c.x, c.y, ex, ey);
+			var a = ex - c.x;
+			var b = ey - c.y;
+			var dist = Math.sqrt( a*a + b*b );
+			c.ray.dist = dist;
+			console.log('dist ' + dist);
+
+
+			if(c.ray.angle < -90){
+						var sinX = Math.sin(c.ray.angle);
+						var opp = sinX * c.ray.dist;
+						var adjX = Math.pow(c.ray.dist,2) - Math.pow(opp,2);
+						var adj = Math.sqrt(adjX);
+
+						var cosx = Math.cos(c.ray.angle );
+						var adj1 = cosx * c.ray.dist;
+
+						console.log('adj ' + adj);
+						console.log('adj1 ' + adj1);
+						console.log( 'yspeed ' + opp/adj);
+						console.log('xspeed ' + adj/opp);
+						
+					}else{
+						var sinX = Math.sin(c.ray.angle);
+						var opp = sinX * c.ray.dist;
+						var adjX = Math.pow(c.ray.dist,2) - Math.pow(opp,2);
+						var adj = Math.sqrt(adjX);
+
+						var cosx = Math.cos(c.ray.angle);
+						var adj1 = cosx * c.ray.dist;
+
+						console.log('adj ' + adj);
+						console.log('opp ' + opp);
+						console.log('sinx ' + sinX);
+						console.log( 'yspeed ' + opp/adj);
+						console.log('xspeed ' + adj/opp);
+					}
+
+			ctx.stroke();
+			ctx.restore();
+		};
+
 		var circleMove = function(dt){
 			if(app.main.gameState == app.main.GAME_STATE.BEGIN){
 				//console.log('here');
+
+
+
 				this.x = app.main.player.x + app.main.player.w / 2;
 
 				if(myKeys.keydown[myKeys.KEYBOARD.KEY_UP]){
-					this.ySpeed = -2;
-					this.xSpeed = -.09; 
+					//this.ySpeed = -2;
+					//this.xSpeed = -.09; 
+
+			if(c.ray.angleDeg < -90){
+						var sinX = Math.sin(c.ray.angle);
+						var opp = sinX * c.ray.dist;
+						var adjX = Math.pow(c.ray.dist,2) - Math.pow(opp,2);
+						var adj = Math.sqrt(adjX);
+
+						var cosx = Math.cos(c.ray.angle);
+						var adj1 = cosx * c.ray.dist;
+
+						this.ySpeed =  opp/c.ray.dist;
+						this.xSpeed =  -1 * adj/c.ray.dist;
+
+						//this.xSpeed = sinX;
+						//this.ySpeed = cosx;
+						
+					}else{
+						var sinX = Math.sin(c.ray.angle);
+						var opp = sinX * c.ray.dist;
+						var adjX = Math.pow(c.ray.dist,2) - Math.pow(opp,2);
+						var adj = Math.sqrt(adjX);
+						
+						var cosx = Math.cos(c.ray.angle);
+						var adj1 = cosx * c.ray.dist;
+
+						this.ySpeed =  opp/c.ray.dist;
+						this.xSpeed = adj/c.ray.dist;
+
+						//this.xSpeed = sinX;
+						//this.ySpeed = cosx;
+					}
+
 					app.main.gameState = app.main.GAME_STATE.DEFAULT;
+					app.main.drawHUD(app.main.ctx);
 				}
+
+				if(myKeys.keydown[myKeys.KEYBOARD.KEY_SPACE]){
+					if(myKeys.keydown[myKeys.KEYBOARD.KEY_LEFT]){
+						this.ray.inc -= 15;
+					}
+
+					if(myKeys.keydown[myKeys.KEYBOARD.KEY_RIGHT]){
+						this.ray.inc += 15;
+					}
+				}
+
+				rayCast(this,app.main.ctx1);
 				
 			}
 			var xMove = this.xSpeed * this.speed * dt;
@@ -819,6 +978,15 @@ drawHUD: function(ctx){
 			c.fillStyle = 'white';
 			c.state = this.CIRCLE_STATE.NORMAL;
 			c.lifetime = 0;
+
+			//ray casting stuff
+			c.ray = {};
+			c.ray.inc = 0;
+			c.ray.Inc = true;
+			c.ray.angle = 90;
+			c.ray.angleDeg = 90;
+			c.ray.dist = 0;
+
 
 			c.draw = circleDraw;
 			c.move = circleMove;
@@ -848,13 +1016,13 @@ drawHUD: function(ctx){
 
 	pauseGame: function(){
 		this.paused = true;
-		cancelAnimationFrame(this.animationID);
+		//cancelAnimationFrame(this.animationID);
 		this.stopBGAudio();
 		this.update();
 	},
 
 	resumeGame: function(){
-		cancelAnimationFrame(this.animationID);
+		//cancelAnimationFrame(this.animationID);
 		this.paused = false;
 		this.bgAudio.play();
 		this.update();

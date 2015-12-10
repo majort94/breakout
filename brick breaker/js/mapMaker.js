@@ -54,7 +54,9 @@
 
 	var map = {
 		numCols : typeRow0.length,
-		numRows : typeRowAll.length
+		numRows : typeRowAll.length,
+		bottomBricks: [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+		shapes: []
 	};
 
 	var BLOCK = {
@@ -79,7 +81,9 @@ function makeMap(){
 */
 
 function makeMap1(){
+
 	for(var i = 0; i < typeRowAll.length; i++){
+		map.shapes.push([]);
 		for(var j = 0; j < typeRowAll[i].length; j++){
 
 			if(typeRowAll[i][j] != 0){
@@ -105,9 +109,15 @@ function makeMap1(){
 				blocks.push(temp);
 				//shapeRowAll[i][i] = new Shape(((BLOCK.piece).toFixed()) * (j), (BLOCK.height0).toFixed() * i, (BLOCK.piece).toFixed() * 2, (BLOCK.height0).toFixed(), tempFill, typeRowAll[i][j], shapeRowAll[i][j], i, j);
 				shapeRowAll[i][j] = temp;
+				map.shapes[i][j] = temp;
 			}
 		}
-	}
+	}// end for loop
+
+	
+	findBottom();
+
+
 }
 
 function Shape(x, y, w, h, fill, type, angle, row, rowIndex) {
@@ -127,6 +137,7 @@ function Shape(x, y, w, h, fill, type, angle, row, rowIndex) {
 function drawMap(){
 	ctx.save();
 	ctx.fillStyle = 'black';
+	ctx.clearRect(0,0, app.main.canvas.width, app.main.canvas.height);
 	ctx.fillRect(0,0, app.main.canvas.width, app.main.canvas.height);
 	ctx.restore();
 
@@ -142,6 +153,8 @@ function drawMap(){
 		
 		ctx.restore();
 	}
+
+	app.main.drawHUD(app.main.ctx);
 	
 /*
 	for(var i = 0; i < shapeRow0.length; i++){
@@ -273,6 +286,47 @@ function deleteBrick(i, j){
 	for(var g = 0; g < blocks.length; g++){
 		if((blocks[g].row == i) && (blocks[g].rowIndex == j)){
 			blocks.splice(g, 1);
+		}
+	}
+}
+
+function findBottom(){
+	var cols = [];
+	
+	for(var i=0;i<map.bottomBricks.length;i++){
+		map.bottomBricks[i] = null;
+	}
+
+	var colCheck = function(){
+		for(var i=0;i<map.bottomBricks.length;i++){
+			if(map.bottomBricks[i] == null){
+				return false;
+			}else{
+				//i+=1;
+			}
+		}
+		//map.rayTurn = map.bottomBricks[map.bottomBricks.length-1].x;
+		return true;
+	};
+	for(var i = shapeRowAll.length - 1; i >= 0;i--){
+		if(colCheck() == false){
+			for(var j=0;j< blocks.length;j++){
+				if(blocks[j].row == i){
+					if(map.bottomBricks[blocks[j].rowIndex] == null){
+						map.bottomBricks[blocks[j].rowIndex] = blocks[j];
+						map.bottomBricks[blocks[j].rowIndex + 1] = 0;
+					}
+				}
+				/*
+				if(shapeRowAll[i][j] != null){
+					if(map.bottomBricks[j] == null){
+						map.bottomBricks[j] = shapeRowAll[i][j];
+						j+=2;
+					}
+				} */
+			}
+		}else{
+			return;
 		}
 	}
 }

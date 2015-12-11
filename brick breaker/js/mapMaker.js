@@ -285,8 +285,8 @@ function Shape(x, y, w, h, type, angle, row, rowIndex) {
     		case 6: // fire brick
     			// apply speed boost to ball
     			console.log('pass');
-    			ball.xSpeed *= 2;
-    			ball.ySpeed *= 2;
+    			ball.speed *= 1.5;
+    			//ball.ySpeed *= 2;
     			break;
     		case 10: // poison brick
     			// apply disintigrationg to ball

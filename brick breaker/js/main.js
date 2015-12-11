@@ -17,7 +17,7 @@ var app = app || {};
  */
 app.main = {
 	//  properties
-    WIDTH : 1200, 
+    WIDTH: 1200,
     HEIGHT: 700,
     canvas: undefined,
     canvas1: undefined,
@@ -57,7 +57,7 @@ app.main = {
     	MAX_RADIUS: 45,
     	MIN_RADIUS: 2,
     	MAX_LIFETIME: 2.5,
-    	MAX_SPEED: 100,
+    	MAX_SPEED: 150,
     	backX: 0,
     	backY: 0
     }),
@@ -92,7 +92,7 @@ app.main = {
 */
    	circles: [],
    	numCircles: this.NUM_CIRCLES_START,
-    
+
     
     // methods
 	init : function() {
@@ -107,7 +107,12 @@ app.main = {
 		this.ctx = this.canvas.getContext('2d');
 		this.ctx1 = this.canvas1.getContext('2d');
 
+		//loadLevel(1);
+		//document.getElementById('mapMaker').src = 'mapMaker.js';
 		makeMap1();
+		//document.getElementById('level1').src = 'js/level1.js';
+		//loadjsfile("mapMaker.js");
+		
 		/* Performance tweaks */
 		this.ctx.shadowBlur = 0;
 		
@@ -144,25 +149,18 @@ app.main = {
 	   		h: 10,
 	   		SPEED: 7,
 	   		EXTEND: 0,
-	   		x: canvas.width/2,
-	   		y: canvas.height - 10 - 2,
+	   		x: this.canvas.width/2,
+	   		y: this.canvas.height - 10 - 2,
 	   		backfill: 0
    		};
    		this.ball = {
-   			x : canvas.width / 2,
-			y : canvas.height - 100,
+   			x : this.canvas.width / 2,
+			y : this.canvas.height - 100,
 			radius : 10,
 			speed : 20
    		};
    		this.gameState = this.GAME_STATE.BEGIN;
-   		//this.drawHUD(this.ctx);
-   		
-		//this.drawPlayer(this.ctx, this.player);
 		this.update();
-
-
-
-		//this.drawHUD(this.ctx);
 	},
 
 	makeFullscreen: function(){
@@ -178,7 +176,7 @@ app.main = {
 
 	resize1: function(){
 		app.main.gameState = app.main.GAME_STATE.SMALL;
- 		app.main.drawHUD(app.main.ctx);
+ 		app.main.drawHUD(app.main.ctx1);
  		window.removeEventListener("resize", this.resize1);
 	},
 
@@ -404,6 +402,7 @@ app.main = {
 	*/
 
 checkForCollisions: function(dt){
+	"use strict";
 		if(this.gameState == this.GAME_STATE.DEFAULT){
 			// check for collisions between circles
 			for(var i=0;i<this.circles.length; i++){
@@ -433,11 +432,14 @@ checkForCollisions: function(dt){
 						break;
 					default:
 				}
-				if(checkIntersect(c1,app.main.player) ){
+
+				if((checkIntersect(c1,app.main.player)) && (Date.now() > +map.playerStamp + 200)){
+						map.playerStamp = Date.now();
 						//this.playEffect();
 						//c2.state = this.CIRCLE_STATE.EXPLODING;
 						c1.ySpeed *= -1;
 						calculateAngle(c1);
+						console.log('yues');
 						return;
 						//var x = c1.x+ c1.radius;
 						//var y = app.main.player
@@ -457,9 +459,9 @@ checkForCollisions: function(dt){
 				
 				for(var j = 0; j < blocks.length; j ++){
 					if(checkIntersectBlock(c1, blocks[j])){
-						if((c1.y > blocks[j].y) || ((c1.y) < blocks[j].y))
+						if((c1.y < blocks[j].y) || ((c1.y) > +blocks[j].y + +blocks[j].h))
 							c1.ySpeed *= -1; 
-						if((c1.x< blocks[j].x) || ((c1.x) > blocks[j].x + blocks[j].w))
+						if((c1.x < blocks[j].x) || ((c1.x) > +blocks[j].x + +blocks[j].w))
 							c1.xSpeed *= -1;
 						blocks[j].health--;
 						lethalStatusCheck(blocks[j].row, blocks[j].rowIndex);
@@ -546,7 +548,13 @@ checkForCollisions: function(dt){
 		// 1) LOOP
 		// schedule a call to update()
 		//this.ctx.clearRect(0,0, this.ctx.width, this.ctx.height);
+
 	 	this.animationID = requestAnimationFrame(this.update.bind(this));
+
+	 	if(myKeys.keydown[myKeys.KEYBOARD.KEY_DOWN]){
+
+	 		loadNewLevel();
+	 	}
 	 	
 	 	// 2) PAUSED?
 	 	// if so, bail out of loop
@@ -566,7 +574,7 @@ checkForCollisions: function(dt){
 		// i) draw background
 		this.ctx.fillStyle = "black"; 
 		//this.ctx.fillRect(0,0,this.WIDTH,this.HEIGHT); 
-		this.ctx.fillRect(0, this.canvas.HEIGHT - 100, this.canvas.width, 100);
+		//this.ctx.fillRect(0, this.canvas.HEIGHT - 100, this.canvas.width, 100);
 		this.ctx1.clearRect(0,0, app.main.canvas1.width, app.main.canvas1.height);
 	
 		// ii) draw circles
@@ -588,7 +596,7 @@ checkForCollisions: function(dt){
 
 		// iii) draw HUD
 		//this.ctx.globalAlpha = 1.0;
-		//this.drawHUD(this.ctx);
+		this.drawHUD(this.ctx1);
 
 		if(this.gameState == this.GAME_STATE.BEGIN || this.gameState == this.GAME_STATE.ROUND_OVER){
 			if(myKeys.keydown[myKeys.KEYBOARD.KEY_UP] && myKeys.keydown[myKeys.KEYBOARD.KEY_SHIFT]){
@@ -599,33 +607,35 @@ checkForCollisions: function(dt){
 		// iv) draw debug info
 		if (this.debug){
 			// draw dt in bottom right corner
-			this.fillText(this.ctx, "dt: " + dt.toFixed(3), this.WIDTH - 150, this.HEIGHT - 10, "18pt courier", "white");
+			this.fillText(this.ctx1, "dt: " + dt.toFixed(3), this.WIDTH - 150, this.HEIGHT - 10, "18pt courier", "white");
 		}
 
 		//this.ctx1.drawImage(this.canvas1, 0, 0);
 		
 	},
 	
-drawHUD: function(ctx){
-		this.ctx.save(); // NEW
-		this.ctx.globalAlpha = 1.0;
+drawHUD: function(temp){
+		temp.save(); // NEW
+		temp.globalAlpha = 1.0;
+		//temp.clearRect(0,0,canvas1.width, canvas1.height);
+		//temp.fillRect(0,0,canvas.width, canvas.height);
 		// draw score
       	// fillText(string, x, y, css, color)
 	/*	if(this.gameState == this.GAME_STATE.SMALL){
 	 		//app.main.gameState = app.main.GAME_STATE.SMALL;
-	 		//app.main.drawHUD(app.main.ctx);
-	 					ctx.fillStyle = 'black';
+	 		//app.main.drawHUD(app.main.temp);
+	 					temp.fillStyle = 'black';
 			app.main.canvas.width = 500;
 			app.main.canvas.height = 500;
-			ctx.fillRect(0,0, canvas.width, canvas.height);
-			ctx.restore();
+			temp.fillRect(0,0, canvas.width, canvas.height);
+			temp.restore();
 			var line1 =  this.first ? "To Start Game" : "To Continue Game";
 			var xPos = this.first ? 163 : 145;
 			this.first = false;
-			this.fillText(this.ctx, line1, xPos, canvas.height/2 - 30, "16pt courier", "#ddd");
-			this.fillText(this.ctx, "Please Click", 170, canvas.height/2, "16pt courier", "#ddd");
-			this.fillText(this.ctx, "Go Full Screen", 155, canvas.height/2 + 30, "16pt courier", "#ddd");
-			ctx.restore();
+			this.fillText(this.temp, line1, xPos, canvas.height/2 - 30, "16pt courier", "#ddd");
+			this.fillText(this.temp, "Please Click", 170, canvas.height/2, "16pt courier", "#ddd");
+			this.fillText(this.temp, "Go Full Screen", 155, canvas.height/2 + 30, "16pt courier", "#ddd");
+			temp.restore();
 			return;
 	 	}
 	 	*/
@@ -633,70 +643,68 @@ drawHUD: function(ctx){
 	 	/*
 		if(this.gameState == this.GAME_STATE.SMALL){
 			console.log('fuck ' + this.gameState);
-			ctx.fillStyle = 'black';
+			temp.fillStyle = 'black';
 			app.main.canvas.width = 1000;
 			app.main.canvas.height = 1000;
-			ctx.fillRect(0,0, canvas.width, canvas.height);
-			ctx.restore();
+			temp.fillRect(0,0, canvas.width, canvas.height);
+			temp.restore();
 			var line1 =  this.first ? "To Start Game" : "To Continue Game";
 			var xPos = this.first ? 163 : 145;
 			this.first = false;
-			this.fillText(this.ctx, line1, xPos, canvas.height/2 - 30, "16pt courier", "#ddd");
-			this.fillText(this.ctx, "Please Click", 170, canvas.height/2, "16pt courier", "#ddd");
-			this.fillText(this.ctx, "Go Full Screen", 155, canvas.height/2 + 30, "16pt courier", "#ddd");
-			ctx.restore();
+			this.fillText(this.temp, line1, xPos, canvas.height/2 - 30, "16pt courier", "#ddd");
+			this.fillText(this.temp, "Please Click", 170, canvas.height/2, "16pt courier", "#ddd");
+			this.fillText(this.temp, "Go Full Screen", 155, canvas.height/2 + 30, "16pt courier", "#ddd");
+			temp.restore();
 			return;
 		}
 
 
 		*/
-		ctx.clearRect(0, this.HEIGHT - 100, this.WIDTH, 100);
-		ctx.fillStyle = 'black';
-		ctx.fillRect(0, this.HEIGHT - 100, this.WIDTH, 100);
 
-		this.fillText(this.ctx, "Total Score: " + this.totalScore, 5, this.HEIGHT - 15, "16pt courier", "#ddd");
-		this.fillText(this.ctx, "Lives: " + this.lives, this.WIDTH - 125, this.HEIGHT - 15, "16pt courier", "#ddd");
-		this.fillText(this.ctx, "fps " + this.fps.toFixed(3), this.WIDTH / 2, this.HEIGHT - 50, "12pt courier", "red");
+
+		this.fillText(temp, "Total Score: " + this.totalScore, 5, this.HEIGHT - 15, "16pt courier", "#ddd");
+		this.fillText(temp, "Lives: " + this.lives, this.WIDTH - 125, this.HEIGHT - 15, "16pt courier", "#ddd");
+		//this.fillText(temp, "fps " + this.fps.toFixed(3), this.WIDTH / 2, this.HEIGHT - 50, "12pt courier", "red");
 
 		if(this.gameState == this.GAME_STATE.BEGIN){
-			ctx.textAlign = "center";
-			ctx.textBaseline = "middle";
-			this.fillText(this.ctx, "To begin, Press UP", this.WIDTH/2, this.HEIGHT/2, "30pt courier", "white");
+			temp.textAlign = "center";
+			temp.textBaseline = "middle";
+			this.fillText(temp, "To begin, Press UP", this.WIDTH/2, this.HEIGHT/2, "30pt courier", "white");
 		} // end if
 	
 		// NEW
 		if(this.gameState == this.GAME_STATE.ROUND_OVER){
 			this.pauseCircles = true;
-			ctx.save();
-			ctx.textAlign = "center";
-			ctx.textBaseline = "middle";
+			temp.save();
+			temp.textAlign = "center";
+			temp.textBaseline = "middle";
 
-			this.fillText(this.ctx, "Round Over", this.WIDTH/2, this.HEIGHT/2 - 40, "30pt courier", "red");
+			this.fillText(temp, "Round Over", this.WIDTH/2, this.HEIGHT/2 - 40, "30pt courier", "red");
 			if(this.roundScore >= this.roundGoal){
-				this.fillText(this.ctx, "Click to continue", this.WIDTH/2, this.HEIGHT/2, "30pt courier", "red");
-				this.fillText(this.ctx, "Next round there are " + (this.numCircles + 5) + " circles", this.WIDTH/2 , this.HEIGHT/2 + 35, "20pt courier", "#ddd");
+				this.fillText(temp, "Click to continue", this.WIDTH/2, this.HEIGHT/2, "30pt courier", "red");
+				this.fillText(temp, "Next round there are " + (this.numCircles + 5) + " circles", this.WIDTH/2 , this.HEIGHT/2 + 35, "20pt courier", "#ddd");
 			}else{
-				this.fillText(this.ctx, "You popped " + this.roundScore + " out of " + this.roundGoal, this.WIDTH/2, this.HEIGHT/2, "30pt courier", "#ddd");
-				this.fillText(this.ctx, "You have " +  (this.lives - 1) + " lives remaining", this.WIDTH/2 , this.HEIGHT/2 + 35, "20pt courier", "#ddd");
+				this.fillText(temp, "You popped " + this.roundScore + " out of " + this.roundGoal, this.WIDTH/2, this.HEIGHT/2, "30pt courier", "#ddd");
+				this.fillText(temp, "You have " +  (this.lives - 1) + " lives remaining", this.WIDTH/2 , this.HEIGHT/2 + 35, "20pt courier", "#ddd");
 			}
 		} // end if
 		if(this.gameState == this.GAME_STATE.END){
-			ctx.save();
-			ctx.textAlign = "center";
-			ctx.textBaseline = "middle";
-			ctx.fillStyle = "black";
-			ctx.globalAlpha = 1;
+			temp.save();
+			temp.textAlign = "center";
+			temp.textBaseline = "middle";
+			temp.fillStyle = "black";
+			temp.globalAlpha = 1;
 			if(this.lives != 0){
-				this.fillText(this.ctx, "You Win!", this.WIDTH/2, this.HEIGHT/2 - 40, "50pt courier", "red");
+				this.fillText(temp, "You Win!", this.WIDTH/2, this.HEIGHT/2 - 40, "50pt courier", "red");
 			}else{
-				this.fillText(this.ctx, "Game Over", this.WIDTH/2, this.HEIGHT/2 - 40, "30pt courier", "red");
+				this.fillText(temp, "Game Over", this.WIDTH/2, this.HEIGHT/2 - 40, "30pt courier", "red");
 			}
-			this.fillText(this.ctx, "Refesh for a New Game", this.WIDTH/2, this.HEIGHT/2, "30pt courier", "white");
-			//this.fillText(this.ctx, "Next round there are " + (this.numCircles + 5) + " circles", this.WIDTH/2 , this.HEIGHT/2 + 35, "20pt courier", "#ddd");
+			this.fillText(temp, "Refesh for a New Game", this.WIDTH/2, this.HEIGHT/2, "30pt courier", "white");
+			//this.fillText(this.temp, "Next round there are " + (this.numCircles + 5) + " circles", this.WIDTH/2 , this.HEIGHT/2 + 35, "20pt courier", "#ddd");
 
 		}
 		
-		ctx.restore(); // NEW
+		temp.restore(); // NEW
 	},
 	
 
@@ -720,7 +728,7 @@ drawHUD: function(ctx){
 		fps = clamp(fps, 20, 60);
 		if(this.fpsShow % 4 == 0){
 			app.main.fps = fps;
-			this.drawHUD(ctx);
+			//this.drawHUD(app.main.ctx1);
 			this.fpsShow++;
 		}else{
 			this.fpsShow++;
@@ -825,16 +833,30 @@ drawHUD: function(ctx){
 			ctx.strokeStyle = '#aaa';
 			ctx.beginPath();
 			ctx.moveTo(c.x, c.y - c.radius);
+			var extra = 0;
 
 			var ex = c.ray.inc;
 			var y = function(){
 				//9console.log('bottom ' + map.bottomBricks);
 				for(var k=0; k<map.bottomBricks.length;k++){
-					if(map.bottomBricks[k] == null){
+					if(c.ray.inc <= map.bottomLeft.x){
+						extra = 1;
+						return map.bottomLeft.y;
+					}
+					if((map.bottomBricks[k] == null) || (map.bottomBricks[k] == 0)){
 						continue;
 					}
-					if(c.ray.inc < map.bottomBricks[k].x + BLOCK.piece * 2){
-						return map.bottomBricks[k].y + BLOCK.height0;
+					if(c.ray.inc < map.bottomBricks[k].x + (map.bottomBricks[k].w)){
+						return +map.bottomBricks[k].y + +map.bottomBricks[k].h;
+					}
+
+					if(c.ray.inc >= map.bottomRight.x){
+						extra = 2;
+						return map.bottomRight.y;
+					}
+
+					if(k == (map.bottomBricks.length -1)){
+						return 0;
 					}
 					//console.log('bricks ' + map.bottomBricks);
 					//console.log('rayturn ' + map.rayTurn);
@@ -849,16 +871,47 @@ drawHUD: function(ctx){
 
 			var ey = y(); 
 			ctx.lineTo(ex, ey);
-			console.log('y ' + ey);
-			console.log('angle ' + (angle(c.x, c.y, ex, ey) ));
-			console.log('angleDeg ' + (angleDeg(c.x, c.y, ex, ey) ));
+			if(extra != 0){
+				var slopeTop = ((c.y - c.radius) - ey);
+				var slopeBottom = (c.x - ex);
+				//ctx.moveTo(ex, ey);
+				var newX = ex;
+				var newY = ey;
+
+				switch(extra){
+					case 1:
+						for(var i=0; i<5;i++){
+							newY -= slopeTop;
+							newX -= slopeBottom;
+							if(newX < 0)
+								break;
+						}
+						break;
+					case 2:
+						for(var i=0; i<5;i++){
+							newY -= slopeTop;
+							newX -= slopeBottom;
+							if(newX > canvas.width)
+								break;
+						}
+						break;
+					default:
+						break;						
+				}
+
+				ctx.lineTo(newX, newY);
+			}
+			//console.log('y ' + ey);
+			//console.log('angle ' + (angle(c.x, c.y, ex, ey) ));
+			//console.log('angleDeg ' + (angleDeg(c.x, c.y, ex, ey) ));
+
 			c.ray.angle = angle(c.x, c.y, ex, ey);
 			c.ray.angleDeg = angleDeg(c.x, c.y, ex, ey);
 			var a = ex - c.x;
 			var b = ey - c.y;
 			var dist = Math.sqrt( a*a + b*b );
 			c.ray.dist = dist;
-			console.log('dist ' + dist);
+			//console.log('dist ' + dist);
 
 
 			if(c.ray.angle < -90){
@@ -870,10 +923,10 @@ drawHUD: function(ctx){
 						var cosx = Math.cos(c.ray.angle );
 						var adj1 = cosx * c.ray.dist;
 
-						console.log('adj ' + adj);
-						console.log('adj1 ' + adj1);
-						console.log( 'yspeed ' + opp/adj);
-						console.log('xspeed ' + adj/opp);
+						//console.log('adj ' + adj);
+						//console.log('adj1 ' + adj1);
+						//console.log( 'yspeed ' + opp/adj);
+						//console.log('xspeed ' + adj/opp);
 						
 					}else{
 						var sinX = Math.sin(c.ray.angle);
@@ -884,12 +937,13 @@ drawHUD: function(ctx){
 						var cosx = Math.cos(c.ray.angle);
 						var adj1 = cosx * c.ray.dist;
 
-						console.log('adj ' + adj);
-						console.log('opp ' + opp);
-						console.log('sinx ' + sinX);
-						console.log( 'yspeed ' + opp/adj);
-						console.log('xspeed ' + adj/opp);
+						//console.log('adj ' + adj);
+						//console.log('opp ' + opp);
+						//console.log('sinx ' + sinX);
+						//console.log( 'yspeed ' + opp/adj);
+						//console.log('xspeed ' + adj/opp);
 					}
+					
 
 			ctx.stroke();
 			ctx.restore();
@@ -906,6 +960,7 @@ drawHUD: function(ctx){
 				if(myKeys.keydown[myKeys.KEYBOARD.KEY_UP]){
 					//this.ySpeed = -2;
 					//this.xSpeed = -.09; 
+
 
 			if(c.ray.angleDeg < -90){
 						var sinX = Math.sin(c.ray.angle);
@@ -939,7 +994,7 @@ drawHUD: function(ctx){
 					}
 
 					app.main.gameState = app.main.GAME_STATE.DEFAULT;
-					app.main.drawHUD(app.main.ctx);
+					app.main.drawHUD(app.main.ctx1);
 				}
 
 				if(myKeys.keydown[myKeys.KEYBOARD.KEY_SPACE]){
@@ -963,8 +1018,8 @@ drawHUD: function(ctx){
 			this.backY = this.y - yMove;
 		};
 			var c = {};
-			c.x = canvas.width / 2;
-			c.y = canvas.height - 100;
+			c.x = this.canvas.width / 2;
+			c.y = this.canvas.height - 100;
 
 			c.radius = this.CIRCLE.START_RADIUS;
 

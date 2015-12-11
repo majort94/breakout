@@ -160,7 +160,7 @@ function calculateAngle(c1){
 	var tempX = c1.x - app.main.player.x;
 	var tempX1 = 0;
 	//console.log('yehs ' + tempX);
-	console.log('xspde ' + c1.xSpeed);
+	//console.log('xspde ' + c1.xSpeed);
 	//console.log('c1 ' + c1.x);
 	//console.log('player ' + app.main.player.x);
 
@@ -212,9 +212,9 @@ function calculateAngle(c1){
 		if(change){
 			c1.xSpeed *= -1;
 			change = false;
-			console.log("Change");
+			//console.log("Change");
 		}
-		console.log('c1.xSpeed ' + c1.xSpeed);
+		//console.log('c1.xSpeed ' + c1.xSpeed);
 }
 
 
@@ -235,3 +235,36 @@ function angleDeg(cx, cy, ex, ey) {
   //if (theta < 0) theta = 360 + theta; // range [0, 360)
   return theta;
 }
+
+
+function loadjsfile(filename){
+   var fileref=document.createElement('script');
+   fileref.type = "text/javascript";
+   fileref.src = filename;
+   document.body.appendChild(fileref);
+   if (typeof fileref !== 'undefined') {
+     // document.getElementsByTagName('head')[0].appendChild(fileref);
+
+      console.log('heee');
+   }
+}
+
+
+function loadLevel(level){
+	map = level1;
+}
+
+
+var loadJS = function(url, implementationCode, location){
+    //url is URL of external file, implementationCode is the code
+    //to be called from the file, location is the location to 
+    //insert the <script> element
+
+    var scriptTag = document.createElement('script');
+    scriptTag.src = url;
+
+    scriptTag.onload = implementationCode;
+    scriptTag.onreadystatechange = implementationCode;
+
+    location.appendChild(scriptTag);
+};

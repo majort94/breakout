@@ -30,14 +30,19 @@
 	10: poisoned brick
 			burns twice as fast as fire bricks, disintegrates ball on contact
 	*/
-	var canvas = document.querySelector('canvas');
+	var canvas = document.querySelector('#canvas1');
 	var ctx = this.canvas.getContext('2d');
+	var canvas1 = document.querySelector('#canvas2');
+	var ctx1 = this.canvas1.getContext('2d');
 
 	canvas.width = app.main.WIDTH;
 	canvas.height = app.main.HEIGHT;
+	canvas1.width = app.main.WIDTH;
+	canvas1.height = app.main.HEIGHT;
 
 
 
+<<<<<<< HEAD
 	var typeRow0 = [1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 	var typeRow1 = [1,0,1,0,0,0,0,1,0,0,1,0,0,1,0,1,0,0,0,0];
 	var typeRow2 = [1,0,1,0,0,0,0,0,1,0,1,0,0,1,0,1,0,0,0,0];
@@ -46,6 +51,16 @@
 	var typeRow5 = [1,0,1,0,1,0,3,0,1,0,1,0,1,0,1,0,0,0,0,0];
 	var typeRow6 = [1,0,2,0,1,0,1,0,1,0,1,0,9,0,1,0,1,0,0,0];
 	var typeRow7 = [1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0];
+=======
+	var typeRow0 = [0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+	var typeRow1 = [0,0,1,0,0,0,0,1,0,0,1,0,0,1,0,1,0,0,0,0];
+	var typeRow2 = [0,0,1,0,0,0,0,0,1,0,1,0,0,1,0,1,0,0,0,0];
+	var typeRow3 = [0,0,1,0,0,0,0,0,1,0,1,0,0,0,1,0,0,0,0,0];
+	var typeRow4 = [0,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,0,0,0,0];
+	var typeRow5 = [0,0,1,0,1,0,1,0,1,0,0,1,0,1,0,1,0,0,0,0];
+	var typeRow6 = [0,0,1,0,1,0,1,0,1,0,1,0,0,0,0,0,1,0,0,0];
+	var typeRow7 = [0,0,1,0,1,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0];
+>>>>>>> Tom
 	var typeRow8 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 	var typeRowAll = [typeRow0, typeRow1, typeRow2, typeRow3, typeRow4, typeRow5, typeRow6, typeRow7, typeRow8];
 
@@ -62,7 +77,13 @@
 
 	var map = {
 		numCols : typeRow0.length,
-		numRows : typeRowAll.length
+		numRows : typeRowAll.length,
+		bottomBricks: [],
+		bottomLeft: {},
+		bottomRight: {},
+		shapes: [],
+		playerStamp: 0,
+
 	};
 
 	var BLOCK = {
@@ -88,8 +109,40 @@ function makeMap(){
 }
 */
 
+function loadNewLevel(){
+	ctx.clearRect(0,0,canvas.width,canvas.height);
+	typeRow0 = level2_0;
+	typeRow1 = level2_1;
+	typeRow2 = level2_2;
+	typeRow3 = level2_3;
+	typeRow4 = level2_4;
+	typeRow5 = level2_5;
+	typeRow6 = level2_6;
+	typeRow7 = level2_7;
+	typeRow8 = level2_8;
+	typeRowAll = level2All;
+
+	shapeRow0 = [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null];
+	shapeRow1 = [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null];
+	shapeRow2 = [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null];
+	shapeRow3 = [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null];
+	shapeRow4 = [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null];
+	shapeRow5 = [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null];
+	shapeRow6 = [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null];
+	shapeRow7 = [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null];
+	shapeRow8 = [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null];
+	//typeRowAll = level2All;
+
+	map.shapes = [];
+	map.bottomBricks = [];
+	blocks = [];
+	makeMap1();
+	drawMap();
+}
 function makeMap1(){
+
 	for(var i = 0; i < typeRowAll.length; i++){
+		map.shapes.push([]);
 		for(var j = 0; j < typeRowAll[i].length; j++){
 
 			if(typeRowAll[i][j] != 0){
@@ -118,9 +171,18 @@ function makeMap1(){
 				blocks.push(temp);
 				//shapeRowAll[i][i] = new Shape(((BLOCK.piece).toFixed()) * (j), (BLOCK.height0).toFixed() * i, (BLOCK.piece).toFixed() * 2, (BLOCK.height0).toFixed(), tempFill, typeRowAll[i][j], shapeRowAll[i][j], i, j);
 				shapeRowAll[i][j] = temp;
+				map.shapes[i][j] = temp;
 			}
 		}
+	}// end for loop
+
+	for(var i = 0; i<map.numCols; i++){
+		map.bottomBricks.push(null);
 	}
+	
+	findBottom();
+
+
 }
 
 function Shape(x, y, w, h, type, angle, row, rowIndex) {
@@ -287,7 +349,12 @@ function Shape(x, y, w, h, type, angle, row, rowIndex) {
 }
 
 function drawMap(){
-	
+	ctx.save();
+	ctx.fillStyle = 'black';
+	ctx.clearRect(0,0, app.main.canvas.width, app.main.canvas.height);
+	ctx.fillRect(0,0, app.main.canvas.width, app.main.canvas.height);
+	ctx.restore();
+
 	for (var i = 0; i < blocks.length; i++) {
 		ctx.save();
 
@@ -306,6 +373,9 @@ function drawMap(){
 
 		ctx.restore();
 	}
+
+	findBottom();
+	app.main.drawHUD(app.main.ctx1);
 	
 /*
 	for(var i = 0; i < shapeRow0.length; i++){
@@ -529,3 +599,75 @@ function deleteBrick(i, j){
 		}
 	}
 }
+
+function findBottom(){
+	var cols = [];
+	
+	for(var i=0;i<map.bottomBricks.length;i++){
+		map.bottomBricks[i] = null;
+	}
+
+	var colCheck = function(){
+		for(var i=0;i<map.bottomBricks.length;i++){
+			if(map.bottomBricks[i] == null){
+				return false;
+			}else{
+				//i+=1;
+			}
+		}
+		//map.rayTurn = map.bottomBricks[map.bottomBricks.length-1].x;
+		return true;
+	};
+	for(var i = shapeRowAll.length - 1; i >= 0;i--){
+		if(colCheck() == false){
+			for(var j=0;j< blocks.length;j++){
+				if(blocks[j].row == i){
+					if(map.bottomBricks[blocks[j].rowIndex] == null){
+						map.bottomBricks[blocks[j].rowIndex] = blocks[j];
+						if(map.bottomBricks[blocks[j].rowIndex + 1] == null)
+							map.bottomBricks[blocks[j].rowIndex + 1] = 0;
+					}
+				}
+				/*
+				if(shapeRowAll[i][j] != null){
+					if(map.bottomBricks[j] == null){
+						map.bottomBricks[j] = shapeRowAll[i][j];
+						j+=2;
+					}
+				} */
+			}
+		}else{
+			return;
+		}
+	}
+
+	var temp = -1;
+	var first = true;
+	for(var i=0; i<map.bottomBricks.length; i++){
+		if(map.bottomBricks[i] == 0){
+			continue;
+		}
+		if(map.bottomBricks[i] == null){
+			temp = i;
+		}else{
+			//console.log("i " + i);
+			map.bottomLeft.x = map.bottomBricks[i].x;
+			map.bottomLeft.y = +map.bottomBricks[i].y + +map.bottomBricks[i].h;
+			break;
+		}
+	}
+
+	for(var i=map.bottomBricks.length - 1; i>=0; i--){
+		if(map.bottomBricks[i] == 0){
+			continue;
+		}
+		if(map.bottomBricks[i] == null){
+			temp = i;
+		}else{
+			map.bottomRight.x = +map.bottomBricks[i].x + +map.bottomBricks[i].w;
+			map.bottomRight.y = +map.bottomBricks[i].y + +map.bottomBricks[i].h;
+			break;
+		}
+	}
+
+} // end findBottom()

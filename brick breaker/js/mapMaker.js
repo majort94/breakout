@@ -1,6 +1,4 @@
 "use strict";
-
-
  /************ Design Rules ************
 
 	key:
@@ -22,20 +20,20 @@
 	...
 	7 : double ball brick
 			spawns an extra ball in the field for a short duration
-	8 : portal brick
-			teleports player to the other portal brick
 	...
 	9 : poison trigger
 			surrounding bricks become poisoned bricks
 	10: poisoned brick
 			burns twice as fast as fire bricks, disintegrates ball on contact
 	*/
+
+	/////////////////////////////////////\\ TO DO //\\\\\\\\\\ - [flame alpha sprite rotation, double ball, slow/speed/destroy ball on hit] - (poison particles)
+
 	var canvas = document.querySelector('canvas');
 	var ctx = this.canvas.getContext('2d');
 
 	canvas.width = app.main.WIDTH;
 	canvas.height = app.main.HEIGHT;
-
 
 
 	var typeRow0 = [1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
@@ -45,7 +43,7 @@
 	var typeRow4 = [1,0,1,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0];
 	var typeRow5 = [1,0,1,0,1,0,3,0,1,0,1,0,1,0,1,0,0,0,0,0];
 	var typeRow6 = [1,0,2,0,1,0,1,0,1,0,1,0,9,0,1,0,1,0,0,0];
-	var typeRow7 = [1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0];
+	var typeRow7 = [1,0,1,0,4,0,4,0,1,0,1,0,1,0,1,0,1,0,0,0];
 	var typeRow8 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 	var typeRowAll = [typeRow0, typeRow1, typeRow2, typeRow3, typeRow4, typeRow5, typeRow6, typeRow7, typeRow8];
 
@@ -70,9 +68,35 @@
 		height0 : (canvas.height - 175) / map.numRows
 	}
 	var blocks = [];
-
 	var date = new Date();
+	
+	var normalBrickObj = new Image();
+		normalBrickObj.src = 'resources/normal_brick.jpg';
+	var normalSocketObj = new Image();
+		normalSocketObj.src = 'resources/normal_socket.png';
+	var iceBrickObj = new Image();
+		iceBrickObj.src = 'resources/ice_brick.jpg';
+	var stoneBrickObj = new Image();
+		stoneBrickObj.src = 'resources/stone_brick.png';
+	var iceTriggerObj = new Image();
+		iceTriggerObj.src = 'resources/ice_trigger.png';
+	var fireTriggerObj = new Image();
+		fireTriggerObj.src = 'resources/fire_trigger.png';
+	var poisonTriggerObj = new Image();
+		poisonTriggerObj.src = 'resources/poison_trigger.png';
+	var poisonAlphaObj = new Image();
+		poisonAlphaObj.src = 'resources/poison_alpha.png';
+	var fireAlpha1Obj = new Image();
+		fireAlpha1Obj.src = 'resources/flame_alpha1.png';
+	var fireAlpha2Obj = new Image();
+		fireAlpha2Obj.src = 'resources/flame_alpha2.png';
+	var fireAlpha3Obj = new Image();
+		fireAlpha3Obj.src = 'resources/flame_alpha3.png';
+	var fireAlpha4Obj = new Image();
+		fireAlpha4Obj.src = 'resources/flame_alpha4.png';
 
+	//var doubleBallObj = new Image();
+	//	doubleBallObj.src = 'resources/double_ball.png';
 /*
 function makeMap(){
 	for(var i = 0; i < typeRowAll.length; i++){
@@ -93,24 +117,7 @@ function makeMap1(){
 		for(var j = 0; j < typeRowAll[i].length; j++){
 
 			if(typeRowAll[i][j] != 0){
-				var pick = getRandomInt(0, app.main.colors.length);
-				var tempFill;
-				switch (typeRowAll[i][j])
-				{
-					case 1:
-						tempFill = "wheat";
-						break;
-					case 2:
-						tempFill = "aqua";
-						break;
-					case 3:
-						tempFill = "red";
-						break;
-					case 4:
-						tempFill = "brown";
-						break;
-				}
-				var temp = new Shape(((BLOCK.piece).toFixed()) * (j), (BLOCK.height0).toFixed() * i, (BLOCK.piece).toFixed() * 2, (BLOCK.height0).toFixed(), app.main.colors[pick], typeRowAll[i][j], shapeRowAll[i][j], i, j);
+				var temp = new Shape(((BLOCK.piece).toFixed()) * (j), (BLOCK.height0).toFixed() * i, (BLOCK.piece).toFixed() * 2, (BLOCK.height0).toFixed(), typeRowAll[i][j], shapeRowAll[i][j], i, j);
 				//var pick = getRandomInt(0, app.main.colors.length);
 				
 				var temp = new Shape(((BLOCK.piece).toFixed()) * (j), (BLOCK.height0).toFixed() * i, (BLOCK.piece).toFixed() * 2, (BLOCK.height0).toFixed(), typeRowAll[i][j], shapeRowAll[i][j], i, j);
@@ -132,80 +139,16 @@ function Shape(x, y, w, h, type, angle, row, rowIndex) {
     this.angle = angle;
     this.row = row;
     this.rowIndex = rowIndex;
-    this.health = 1;
+
+    if (this.type == 4) { this.health = 2; }
+    else this.health = 1;
+
     this.lifespan = 1;
     this.burn = false;
     this.poison = false;
     this.otherPortal = null;
-    this.filePaths = function () { // MOVE TO MAP
-    	this.normalBrick = 'resources/wood/normal_brick.png';
-    	this.iceBrick = null;
-    	this.normalSocket = null;
-    	this.iceSocket = null;
-    	this.iceTrigger = null;
-    	this.fireTrigger = null;
-    	this.poisonTrigger = null;
-    	this.fireAlpha = null;
-    	this.poisonAlpha = null;
-    }
-    switch (type) // will remove fills after drawMap and collision are fixed to work with images // REMOVE
-    {
-    	case 1: //normal brick
-    		this.fill = "wheat";
-    		this.filePaths.normal = 'resources/wood/normal_brick.png';
-    		break;
-    	case 2: // ice trigger
-    		this.fill = "blue";
-    		this.filePath = 'resources/wood/normal_brick.png';
-    		break;
-    	case 3: // fire trigger
-    		this.fill = "red";
-    		this.filePath = 'resources/wood/normal_brick.png';
-    		break;
-    	case 9: // poison trigger
-    		this.fill = "green";
-    		break;
 
-    	case 6: // burning brick
-    		this.fill = "orange";
-    		break;
-    	case 10: // poisoned brick
-    		this.fill = "lightgreen";
-    		break;
-    	case 4: // stone take twice normal to kill
-    		this.health = 2;
-    		this.lifespan = 2;
-    		this.fill = "brown";
-    		break;
-    	case 5: // frozen have twice hp but half burn
-    		this.heath = 2;
-    		this.lifespan = .5;
-    		this.fill = "aqua";
-    		break;
-
-    	case 7: // double ball brick
-    		break;
-    	case 8: // portal brick -- STARTED
-    		for (var i = 0; i < blocks.length; i++)
-    		{
-    			// find portals
-    			if (blocks[i].type = 8)
-    			{
-    				// check not self
-    				if ((blocks[i].row != this.row) && (blocks[i].rowIndex != this.rowIndex))
-    				{
-    					this.otherPortal = (blocks[i].row, blocks[i].rowIndex);
-    				}
-    			}
-    		}
-    		break;
-
-    	
-    	default:
-    		break;
-    }
     this.beenHit = function(ball) {
-    	
     	switch (type)
     	{
     		case 2: // ice trigger
@@ -218,23 +161,20 @@ function Shape(x, y, w, h, type, angle, row, rowIndex) {
     			applyEffectsToBricks(referenceSurroundingBricks(this), 10);
     			break;
     		case 5: // ice brick
-    			// apply chill to ball
+    		    // apply chill to ball
+    		    //console.log('chill speed slow ball');
+    		    //ball.speed *= .75;
     			break;
     		case 6: // fire brick
     			// apply speed boost to ball
-    			console.log('pass');
-    			ball.speed *= 1.5;
-    			//ball.ySpeed *= 2;
+    			//console.log('burn speed boost ball');
+    			//ball.speed *= 1.5;
     			break;
     		case 10: // poison brick
     			// apply disintigrationg to ball
-
     			break;
-
     		case 7: // double ball brick
-    			// spawn second ball 
-    		case 8: // portal brick
-    			// teleport ball to other portal
+    			//put another ball in play
     			break;
     		default:
     			break;
@@ -269,66 +209,59 @@ function Shape(x, y, w, h, type, angle, row, rowIndex) {
 			}
     	}
     };
-    this.draw = function() {
-    	/*
-    	//brick
-    	ctx.drawImage();
-    	//socket and orb
-    	if (this.type == 2 || 3 || 7 || 8 || 9) 
-    		{ ctx.drawImage(); }
-    	// fire alpha
+    this.draw = function() {        
+        //bricks
+        if (this.type == 5)
+        { ctx.drawImage(iceBrickObj, this.x , this.y, this.w, this.h); }
+    	else if (this.type == 4)
+    	{ ctx.drawImage(stoneBrickObj, this.x , this.y, this.w, this.h); }
+    	else 
+    	{ ctx.drawImage(normalBrickObj, this.x , this.y, this.w, this.h); }
+        
+    	//socket
+    	if (this.type == 2 || this.type == 3 || this.type == 7 || this.type == 8 || this.type == 9) 
+    	{ ctx.drawImage(normalSocketObj, this.x, this.y, this.w, this.h); }
+    	
+        //socketed
+    	if (this.type == 2)
+    	{ ctx.drawImage(iceTriggerObj, this.x + 2, this.y + 1, this.w, this.h); }
+    	if (this.type == 3)
+    	{ ctx.drawImage(fireTriggerObj, this.x + 2, this.y + 2, this.w, this.h); }
+    	if (this.type == 9)
+    	{ ctx.drawImage(poisonTriggerObj, this.x + 2, this.y + 1, this.w, this.h); }
+
+        // double ball art placeholder
+
+        //DOTs
     	if (this.burn) 
-    		{ ctx.drawImage(); }
-    	//poison alpha
+    	//{ ctx.drawImage(fireAlphaObj, this.x, this.y, this.w, this.h); }
+    	{
+    		var burn = function() { console.log("iteration"); }
+    		console.log("start burn");
+    		setTimeout(burn(), 10000);
+    	}
     	if (this.poison)
-    		{ ctx.drawImage(); }
-    	*/
+    	{ ctx.drawImage(poisonAlphaObj, this.x, this.y, this.w, this.h); }
     };
 }
 
 function drawMap(){
-	
 	for (var i = 0; i < blocks.length; i++) {
 		ctx.save();
 
-		/*
-		blocks[i].draw();
-		*/
-
-		//
-		ctx.fillStyle = blocks[i].fill;
+        //position brick
 		ctx.translate(blocks[i].x, blocks[i].y);
 		if(blocks[i].angle != 0){
 			ctx.rotate(blocks[i].angle * Math.PI/180);
 		}
-		ctx.fillRect(0, 0, blocks[i].w, blocks[i].h);
-		//
+        //draw bricks
+		for (var i = 0; i < blocks.length; i++)
+		{
+		    blocks[i].draw();
+		}
 
 		ctx.restore();
 	}
-	
-/*
-	for(var i = 0; i < shapeRow0.length; i++){
-		for(var j = 0; j < shapeRowAll.length; j++){
-			if(shapeRowAll[i][j] != null){
-
-			
-			ctx.save();
-			ctx.fillStyle = shapeRowAll[i][j].fill;
-			ctx.translate(shapeRowAll[i][j].x, shapeRowAll[i][j].y);
-			if(shapeRowAll[i][j].angle != 0){
-				ctx.rotate(shapeRowAll[i][j].angle * Math.PI/180);
-			}
-
-			ctx.fillRect(0, 0, shapeRowAll[i][j].w, shapeRowAll[i][j].h);
-			
-			ctx.restore();
-		}
-
-		}
-
-	}
-	*/
 }
 
 function getRandomInt(min, max) {
@@ -385,90 +318,25 @@ function referenceSurroundingBricks(trigger) {
 	return referenceArrays;
 }
 
-/*
-function referenceDiagonalBricks(trigger, radius) {
-	var xIndexArray = [];
-	var yIndexArray = [];
-	var referenceArrays = [xIndexArray, yIndexArray];
-	// REFERENCE ARRAY OF BRICKS - has two elements, each an array of their respective indexes
-	var maxRowIndex = typeRowAll.length;
-	var maxWithinRowIndex = typeRowAll[0].length;
-
-	var tempX = 0;
-	var tempY = 0;
-	var compensation = 1;
-
-	// iterate through each 4 diagonals
-	for (var i = 0; i < 4; i++)
-	{
-		switch (i)
-		{
-			case 0:
-				tempY = -1;
-				tempX = -2;
-				break;
-			case 1:
-				tempY = -1;
-				tempX = 2;
-				break;
-			case 2:
-				tempY = 1;
-				tempX = 2;
-				break;
-			case 3:
-				tempY = 1;
-				tempX = -2;
-				break;
-		}
-		
-		for (var j = 0; j < 2; j++)
-		{
-			// increment tempX and tempY for each iteration, in order to reference the next brick in that diagonal direction
-			tempX = tempX + (tempX * j);
-			tempY = tempY + (tempY * j);
-
-			// checking if diagonals are within map
-			if ((trigger.row + tempY > 0) || (trigger.row + tempY <= shapeRowAll.length))
-			{
-				if ((trigger.rowIndex + tempX > 0) || (trigger.rowIndex + tempX <= shapeRow0.length))
-				{
-					//null check / normal brick
-					if (shapeRowAll[trigger.row + tempY][trigger.rowIndex + tempX] != null)
-					{
-						if ((typeRowAll[trigger.row + tempY][trigger.rowIndex + tempX] == 1))
-						{ 
-							xIndexArray.push(trigger.row + tempY); yIndexArray.push(trigger.rowIndex + tempX); 
-						}
-					}
-				}
-			}
-		}
-	}
-	return referenceArrays;
-} */
-
 function applyEffectsToBricks(bricksArray, effect) // used by elemental triggers
 {
 	for (var i=0; i < bricksArray[0].length; i++)
 	{
+		//switches to ice brick type
+		typeRowAll[bricksArray[0][i]][bricksArray[1][i]] = effect;
+		shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].type = effect;
+
+		//element specific effects
 		switch (effect)
 		{
 			//Freeze
 			case 5:
-				//switches to ice brick type
-				typeRowAll[bricksArray[0][i]][bricksArray[1][i]] = effect;
-				shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].type = effect;
-				//change to ice brick fill
-				shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].fill = "aqua";
 				//stops burns and adds defense
 				shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].burn = false;
 				shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].health += 1;
 				break;
 			//Burn
 			case 6:
-				//apply burn alpha layer
-				// ------------
-				shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].fill = "orange";
 				//ice burns twice as fast as normal
 				if (shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].type == 5) 
 					{ shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].burnRate = 2000; }
@@ -476,9 +344,6 @@ function applyEffectsToBricks(bricksArray, effect) // used by elemental triggers
 				break;
 			//Poison
 			case 10:
-				//apply poison alpha layer
-				// --------------
-				shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].fill = "lightgreen";
 				//twice fire burn speed
 				shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].poison = true;
 				shapeRowAll[bricksArray[0][i]][bricksArray[1][i]].burnRate = 2000;
@@ -491,38 +356,33 @@ function applyEffectsToBricks(bricksArray, effect) // used by elemental triggers
 }
 
 function lethalStatusCheck(i, j){
-	// for(var i = 0; i < typeRowAll.length; i++){
-	//	for(var j = 0; j < typeRowAll[i].length; j++)
-		//{
-
-			//find bricks
-			if (shapeRowAll[i][j] != null)
+	//find bricks
+	if (shapeRowAll[i][j] != null)
+	{
+		// 0hp kill threshold
+		if (shapeRowAll[i][j].health <= 0) 
+		{ 
+			deleteBrick(i, j); 
+			return;
+		}
+		// find bricks affected by DOT
+		if (shapeRowAll[i][j].lifespan != 0)
+		{
+			if (shapeRowAll[i][j].lifespan <= 0)
 			{
-				// 0hp kill threshold
-				if (shapeRowAll[i][j].health <= 0) 
-				{ 
-					deleteBrick(i, j); 
-					return;
-				}
-				// find bricks affected by DOT
-				if (shapeRowAll[i][j].lifespan != 0)
-				{
-					if (shapeRowAll[i][j].lifespan <= 0)
-					{
-						deleteBrick(i, j);
-					}
-				}
+				deleteBrick(i, j);
 			}
-		//}
-	//}
+		}
+	}
 }
 
 function deleteBrick(i, j){
-	typeRowAll[i][j] = 0;
-	shapeRowAll[i][j] = null;
+	//score up
 	app.main.totalScore++;
 
-
+	//remove from map
+	typeRowAll[i][j] = 0;
+	shapeRowAll[i][j] = null;
 	for(var g = 0; g < blocks.length; g++){
 		if((blocks[g].row == i) && (blocks[g].rowIndex == j)){
 			blocks.splice(g, 1);
